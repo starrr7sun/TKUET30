@@ -1,0 +1,1448 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>淡江大學教育科技系 30 周年慶・數位祝福留言牆與管理中心</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+  <!-- Google Fonts: Noto Serif TC, Zen Maru Gothic -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            warm: ['"Zen Maru Gothic"', 'sans-serif'],
+            serifTc: ['"Noto Serif TC"', 'serif'],
+            cinzel: ['"Cinzel"', 'serif'],
+          },
+          colors: {
+            tkGold: '#D4AF37',
+            tkNavy: '#1E293B',
+            tkMaroon: '#800000',
+            warmCream: '#FAF7F0',
+          },
+          keyframes: {
+            floatBadge: {
+              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+              '50%': { transform: 'translateY(-6px) rotate(1deg)' }
+            },
+            popNote: {
+              '0%': { transform: 'scale(0.85) translateY(24px)', opacity: '0' },
+              '100%': { transform: 'scale(1) translateY(0)', opacity: '1' }
+            }
+          },
+          animation: {
+            floatBadge: 'floatBadge 4.5s ease-in-out infinite',
+            popNote: 'popNote 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      background: radial-gradient(circle at 15% 15%, #FFFDF8 0%, #FBF6EC 45%, #F4ECE1 100%);
+      overflow-x: hidden;
+    }
+    
+    /* 便利貼 / 拍立得紙感卡片 */
+    .wishing-card {
+      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+      position: relative;
+    }
+    .wishing-card:hover {
+      transform: translateY(-6px) scale(1.02) !important;
+      box-shadow: 0 20px 30px -10px rgba(138, 100, 60, 0.2);
+      z-index: 25;
+    }
+
+    /* 置頂卡片加亮效果 */
+    .pinned-card {
+      box-shadow: 0 0 0 3px #D4AF37, 0 12px 24px -6px rgba(212, 175, 55, 0.35);
+    }
+
+    /* 紙膠帶裝飾 */
+    .washi-tape {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 75px;
+      height: 22px;
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(3px);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-left: 3px dashed rgba(180, 150, 120, 0.4);
+      border-right: 3px dashed rgba(180, 150, 120, 0.4);
+      border-radius: 2px;
+      z-index: 10;
+    }
+
+    /* 金色置頂膠帶 */
+    .washi-tape-gold {
+      background: rgba(254, 240, 138, 0.85);
+      border-left: 3px dashed rgba(180, 130, 40, 0.5);
+      border-right: 3px dashed rgba(180, 130, 40, 0.5);
+    }
+
+    #ambient-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 滾動條美化 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.03);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(212, 175, 55, 0.4);
+      border-radius: 99px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(212, 175, 55, 0.8);
+    }
+  </style>
+</head>
+<body class="text-stone-700 min-h-screen relative flex flex-col selection:bg-amber-100 selection:text-amber-900">
+
+  <!-- 背景動態金色微光粒子 -->
+  <canvas id="ambient-canvas"></canvas>
+
+  <!-- 頂部頁眉 navigation -->
+  <header class="relative z-20 px-4 md:px-6 py-4 border-b border-amber-900/10 bg-white/80 backdrop-blur-md shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- 主題標題與 30 週年專屬徽章 -->
+      <div class="flex items-center gap-3.5">
+        <!-- 30週年紀念徽章 -->
+        <div class="relative animate-floatBadge">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex flex-col items-center justify-center text-white shadow-lg shadow-amber-600/25 border-2 border-amber-200">
+            <span class="font-cinzel text-xs font-semibold leading-none tracking-widest text-amber-200">TKU</span>
+            <span class="font-cinzel text-2xl font-black leading-tight text-white drop-shadow">30</span>
+            <span class="text-[9px] font-bold tracking-tighter text-amber-100">ANNIVERSARY</span>
+          </div>
+          <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-rose-500 border border-white text-[10px] text-white flex items-center justify-center font-bold">
+            🎓
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-200/80">
+              淡江大學教育科技學系
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              現場互動即時投影
+            </span>
+          </div>
+          <h1 class="text-xl md:text-2xl lg:text-3xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">
+            30 周年慶・數位祝福留言牆
+          </h1>
+          <p class="text-xs md:text-sm text-stone-500 font-medium mt-0.5">
+            「三十而立・點亮教科・智慧傳承・創思未來」
+          </p>
+        </div>
+      </div>
+
+      <!-- 頂部操作與導覽按鈕 -->
+      <div class="flex items-center gap-2.5 flex-wrap">
+        <!-- 留言統計 -->
+        <div class="px-3.5 py-2 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-center gap-2 text-stone-700 shadow-xs">
+          <i data-lucide="sparkles" class="w-4 h-4 text-amber-600"></i>
+          <span class="text-xs font-medium">匯聚祝福：</span>
+          <span id="wish-counter" class="text-base font-black text-amber-900 font-mono">0</span>
+          <span class="text-xs font-medium">篇</span>
+        </div>
+
+        <!-- 舞台自動輪播滾動 -->
+        <button id="toggle-autoscroll" onclick="toggleAutoScroll()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 hover:border-amber-400 hover:bg-amber-50 text-stone-700 transition flex items-center gap-1.5 shadow-xs">
+          <i data-lucide="play" id="autoscroll-icon" class="w-3.5 h-3.5 text-amber-600"></i>
+          <span id="autoscroll-label">舞台輪播</span>
+        </button>
+
+        <!-- 留下祝福開關 -->
+        <button onclick="openSenderModal()" class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md shadow-amber-600/25 transition flex items-center gap-1.5 active:scale-95">
+          <i data-lucide="edit-3" class="w-4 h-4"></i>
+          <span>送上祝福</span>
+        </button>
+
+        <!-- 後台管理開關 (Admin Portal Drawer Button) -->
+        <button onclick="toggleAdminDrawer()" class="px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold bg-slate-800 hover:bg-slate-900 text-amber-300 shadow-md transition flex items-center gap-1.5 relative border border-amber-500/30">
+          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
+          <span>管理中心</span>
+          <span id="pending-badge" class="hidden absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full animate-bounce">0</span>
+        </button>
+
+        <!-- 投影全螢幕按鈕 -->
+        <button onclick="toggleFullScreen()" title="切換投影全螢幕" class="p-2 rounded-xl text-stone-600 bg-white border border-stone-200 hover:bg-amber-50 transition shadow-xs">
+          <i data-lucide="maximize" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- 搜尋與身分篩選欄 (Live Stream Bar) -->
+  <section class="relative z-10 max-w-7xl mx-auto w-full px-5 pt-4 flex flex-wrap items-center justify-between gap-3">
+    <!-- 身分 Filter Buttons -->
+    <div class="flex items-center gap-1.5 flex-wrap text-xs" id="role-filter-group">
+      <button onclick="setRoleFilter('ALL')" class="role-btn px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 shadow-xs" data-role="ALL">全部留言</button>
+      <button onclick="setRoleFilter('畢業系友')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="畢業系友">🎓 畢業系友</button>
+      <button onclick="setRoleFilter('教科在校生')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="教科在校生">🎒 在校學生</button>
+      <button onclick="setRoleFilter('系上師長')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="系上師長">📚 師長教職</button>
+      <button onclick="setRoleFilter('貴賓好友')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="貴賓好友">🤝 貴賓好友</button>
+    </div>
+
+    <!-- 搜尋框 -->
+    <div class="relative flex-1 max-w-xs">
+      <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"></i>
+      <input type="text" id="live-search-input" oninput="handleSearch(this.value)" placeholder="搜尋發言人或關鍵字..." class="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/40 bg-white/90 shadow-xs" />
+    </div>
+  </section>
+
+  <!-- 主要內容區 -->
+  <main class="relative z-10 flex-1 p-5 md:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
+    
+    <!-- 祝福卡片流 / 網格 -->
+    <section class="flex-1">
+      <div id="wishes-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max transition-all">
+        <!-- 卡片由 JavaScript 動態填入 -->
+      </div>
+
+      <div id="empty-state" class="hidden text-center py-20 bg-white/40 rounded-3xl border border-amber-900/5">
+        <div class="w-20 h-20 mx-auto rounded-full bg-amber-100/80 flex items-center justify-center text-amber-600 mb-3 shadow-inner">
+          <i data-lucide="heart-handshake" class="w-10 h-10"></i>
+        </div>
+        <h3 class="text-xl font-bold text-stone-700 font-serifTc">尚無符合此條件的祝福</h3>
+        <p class="text-stone-400 text-sm mt-1">快點擊右上角「送上祝福」或用手機掃碼留言吧！</p>
+      </div>
+    </section>
+
+    <!-- 投影端右側常駐看板：現場 QR Code 掃描區 -->
+    <aside class="lg:w-80 w-full flex-shrink-0 flex flex-col gap-4">
+      <div class="sticky top-24 bg-white/85 backdrop-blur-md rounded-3xl p-6 border border-amber-900/10 shadow-xl text-center flex flex-col items-center">
+        
+        <!-- 慶典標章 -->
+        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100/70 text-amber-800 border border-amber-200 mb-3">
+          <i data-lucide="camera" class="w-3.5 h-3.5 text-amber-700"></i> 手機掃碼即刻上牆
+        </span>
+
+        <h2 class="text-lg font-bold text-stone-800 font-serifTc">淡江教科 30th 祝願集結</h2>
+        <p class="text-xs text-stone-500 mt-1 mb-4 leading-relaxed">
+          相機對準條碼即可留言<br/>分享那些年在淡江的熱血與感動
+        </p>
+
+        <!-- QR Code 容器 (點擊可放大展示) -->
+        <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative" onclick="openQrModal()" title="點擊放大 QR Code 供全場掃描">
+          <div id="qrcode-display" class="flex justify-center items-center"></div>
+          <div class="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 rounded-2xl flex items-center justify-center text-white text-xs font-semibold transition backdrop-blur-xs">
+            <span class="flex items-center gap-1.5 bg-stone-900/90 px-3 py-1.5 rounded-xl shadow-lg">
+              <i data-lucide="maximize-2" class="w-4 h-4 text-amber-400"></i> 點擊放大條碼
+            </span>
+          </div>
+        </div>
+
+        <p class="text-[11px] text-stone-400 mt-3 flex items-center gap-1">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i> 免下載 App・同步大螢幕
+        </p>
+
+        <!-- 現場演示即時模擬模組 -->
+        <div class="w-full mt-4 pt-4 border-t border-stone-100 flex flex-col gap-2.5">
+          <div class="flex items-center justify-between text-xs text-stone-600 font-bold">
+            <span class="flex items-center gap-1"><i data-lucide="play-circle" class="w-3.5 h-3.5 text-amber-600"></i> 現場模擬祝賀聲浪</span>
+            <span id="sim-status" class="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 font-normal">靜止</span>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button onclick="triggerManualSim()" class="flex-1 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1">
+              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> 手動觸發 1 則
+            </button>
+            <button id="auto-sim-btn" onclick="toggleAutoSim()" class="flex-1 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1">
+              <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-600"></i> 自動生成
+            </button>
+          </div>
+        </div>
+
+        <!-- 現場設定與匯出 -->
+        <div class="w-full mt-3 pt-3 border-t border-stone-100 flex flex-col gap-2">
+          <div class="flex items-center justify-between text-xs text-stone-500">
+            <span>現場設定</span>
+            <button onclick="exportWishes()" class="text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1">
+              <i data-lucide="download" class="w-3 h-3"></i> 匯出名冊
+            </button>
+          </div>
+          <div class="flex gap-1.5">
+            <input id="custom-qr-url" type="text" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-stone-200 focus:outline-none focus:ring-1 focus:ring-amber-500 bg-stone-50" placeholder="活動網址" />
+            <button onclick="updateQrUrl()" class="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs font-medium transition text-stone-700">更新</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- 抽屜式「後台管理中心」 Drawer & Portal      -->
+  <!-- ========================================== -->
+  <div id="admin-drawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-slate-900 text-slate-100 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
+    <!-- 後台 Top Bar -->
+    <div class="p-5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between backdrop-blur">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+          <i data-lucide="sliders" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h2 class="font-bold text-lg text-white font-serifTc">教科 30 周年・現場留言管理中心</h2>
+          <p class="text-xs text-slate-400">實時審核、置頂控制、內容過濾與數據統計</p>
+        </div>
+      </div>
+      <button onclick="toggleAdminDrawer()" class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-700 transition">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+    </div>
+
+    <!-- 後台 Tab 控制項 -->
+    <div class="flex border-b border-slate-800 bg-slate-900/80 px-5 gap-4">
+      <button onclick="switchAdminTab('moderation')" id="tab-btn-moderation" class="py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5">
+        <i data-lucide="list-checks" class="w-4 h-4"></i> 留言審核與管理
+      </button>
+      <button onclick="switchAdminTab('stats')" id="tab-btn-stats" class="py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5">
+        <i data-lucide="bar-chart-3" class="w-4 h-4"></i> 數據統計面板
+      </button>
+      <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5">
+        <i data-lucide="settings" class="w-4 h-4"></i> 審核機制設定
+      </button>
+    </div>
+
+    <!-- 後台內容區 (Moderation Tab) -->
+    <div id="admin-tab-moderation" class="flex-1 overflow-y-auto p-5 space-y-4">
+      <!-- 搜尋與狀態 Filter -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/50 p-3 rounded-2xl border border-slate-700/60">
+        <div class="flex items-center gap-1.5 text-xs">
+          <button onclick="setAdminStatusFilter('ALL')" id="admin-st-ALL" class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold">全部 (<span id="cnt-all">0</span>)</button>
+          <button onclick="setAdminStatusFilter('PENDING')" id="admin-st-PENDING" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">待審核 (<span id="cnt-pending">0</span>)</button>
+          <button onclick="setAdminStatusFilter('APPROVED')" id="admin-st-APPROVED" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">已展示 (<span id="cnt-approved">0</span>)</button>
+          <button onclick="setAdminStatusFilter('REJECTED')" id="admin-st-REJECTED" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">已隱藏 (<span id="cnt-rejected">0</span>)</button>
+        </div>
+        <!-- 批次快速操作 -->
+        <div class="flex items-center gap-2">
+          <button onclick="batchApprovePending()" class="text-xs px-2.5 py-1.5 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/30 rounded-lg transition">
+            一鍵通過所有待審
+          </button>
+        </div>
+      </div>
+
+      <!-- 管理列表清單 -->
+      <div id="admin-message-list" class="space-y-3">
+        <!-- JS 動態渲染卡片列表 -->
+      </div>
+    </div>
+
+    <!-- 後台數據統計 (Stats Tab) -->
+    <div id="admin-tab-stats" class="hidden flex-1 overflow-y-auto p-5 space-y-6">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div class="p-4 rounded-2xl bg-slate-800 border border-slate-700">
+          <p class="text-xs text-slate-400">累積總留言</p>
+          <h4 id="stat-total" class="text-2xl font-black text-amber-400 font-mono mt-1">0</h4>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-800 border border-slate-700">
+          <p class="text-xs text-slate-400">審核通過率</p>
+          <h4 id="stat-rate" class="text-2xl font-black text-emerald-400 font-mono mt-1">100%</h4>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-800 border border-slate-700">
+          <p class="text-xs text-slate-400">收獲愛心數</p>
+          <h4 id="stat-likes" class="text-2xl font-black text-rose-400 font-mono mt-1">0</h4>
+        </div>
+        <div class="p-4 rounded-2xl bg-slate-800 border border-slate-700">
+          <p class="text-xs text-slate-400">特別置頂數</p>
+          <h4 id="stat-pinned" class="text-2xl font-black text-sky-400 font-mono mt-1">0</h4>
+        </div>
+      </div>
+
+      <!-- 身分比例柱狀圖 -->
+      <div class="p-5 rounded-2xl bg-slate-800 border border-slate-700">
+        <h4 class="text-sm font-bold text-slate-200 mb-4 flex items-center gap-1.5">
+          <i data-lucide="users" class="w-4 h-4 text-amber-400"></i> 祝福來源身分分布
+        </h4>
+        <div id="role-chart-container" class="space-y-3">
+          <!-- JS 動態生成柱狀數據 -->
+        </div>
+      </div>
+    </div>
+
+    <!-- 後台審核機制設定 (Settings Tab) -->
+    <div id="admin-tab-settings" class="hidden flex-1 overflow-y-auto p-5 space-y-5">
+      <div class="p-5 rounded-2xl bg-slate-800 border border-slate-700 space-y-4">
+        <h4 class="font-bold text-amber-400 text-sm flex items-center gap-2">
+          <i data-lucide="shield" class="w-4 h-4"></i> 留言防護與自動過濾門檻
+        </h4>
+        
+        <div class="flex items-center justify-between pt-2 border-t border-slate-700">
+          <div>
+            <p class="text-sm font-medium text-slate-200">開啟「先審後顯」機制</p>
+            <p class="text-xs text-slate-400">開啟後，民眾送出的留言需經管理員點擊「通過」才登上大螢幕</p>
+          </div>
+          <input type="checkbox" id="setting-auto-moderate" onchange="toggleAutoModerateSetting(this.checked)" class="w-5 h-5 accent-amber-500 rounded cursor-pointer" />
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-slate-700">
+          <div>
+            <p class="text-sm font-medium text-slate-200">音效提示聲</p>
+            <p class="text-xs text-slate-400">當有新留言進來時，播放現場慶典溫馨提示音</p>
+          </div>
+          <input type="checkbox" id="setting-sound" checked class="w-5 h-5 accent-amber-500 rounded cursor-pointer" />
+        </div>
+
+        <div class="pt-3 border-t border-slate-700">
+          <p class="text-sm font-medium text-slate-200 mb-1">敏感詞自動遮蔽 (以逗號分隔)</p>
+          <input type="text" id="setting-sensitive-words" value="廣告, 詐騙, 買粉, 違禁品" class="w-full text-xs px-3 py-2 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500" />
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 卡片放大檢視彈窗 -->
+  <div id="magnify-modal" class="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all transform animate-popNote" id="magnify-card-content">
+      <div class="washi-tape"></div>
+      <button onclick="closeMagnifyModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-black/5 transition">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+
+      <div class="flex items-center gap-3.5 mb-4">
+        <span id="mag-avatar" class="w-12 h-12 rounded-2xl text-2xl flex items-center justify-center bg-white/80 shadow-xs border border-black/5"></span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h4 id="mag-name" class="text-xl font-bold text-stone-800 font-serifTc"></h4>
+            <span id="mag-role" class="text-xs px-2 py-0.5 rounded-md font-bold"></span>
+          </div>
+          <span id="mag-time" class="text-xs text-stone-500"></span>
+        </div>
+      </div>
+
+      <div class="p-4 bg-white/60 rounded-2xl border border-black/5 mb-4">
+        <p id="mag-text" class="text-stone-800 text-lg leading-relaxed font-warm whitespace-pre-wrap"></p>
+      </div>
+
+      <div class="flex justify-end gap-2">
+        <button id="mag-like-btn" class="px-4 py-2 rounded-xl bg-white/90 hover:bg-white text-rose-600 font-bold text-sm shadow-xs border border-rose-100 flex items-center gap-1.5 transition">
+          <i data-lucide="heart" class="w-4 h-4 fill-rose-500 text-rose-500"></i>
+          <span id="mag-like-count">送上溫暖愛心</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code 巨幅投影展示彈窗 -->
+  <div id="qr-modal" class="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-md hidden flex items-center justify-center p-6">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center relative shadow-2xl animate-popNote border-4 border-amber-200">
+      <button onclick="closeQrModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-stone-100 transition">
+        <i data-lucide="x" class="w-6 h-6"></i>
+      </button>
+      
+      <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-3">
+        <i data-lucide="qr-code" class="w-8 h-8"></i>
+      </div>
+      <h3 class="text-2xl font-bold font-serifTc text-stone-800">淡江教科 30 周年・現場留言</h3>
+      <p class="text-stone-500 text-sm mt-1 mb-6">歡迎系友、在校生、師長拿起手機掃描條碼</p>
+      
+      <div class="p-5 bg-amber-50/50 border border-amber-200 rounded-3xl inline-block shadow-inner">
+        <div id="qrcode-large" class="mx-auto flex justify-center"></div>
+      </div>
+      
+      <div class="mt-6">
+        <button onclick="closeQrModal()" class="px-8 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white font-bold text-sm transition">
+          返回祝福牆
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 編輯卡片內容 Modal (管理者專用) -->
+  <div id="edit-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 text-slate-100 rounded-3xl p-6 max-w-lg w-full shadow-2xl relative border border-slate-700">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+        <h3 class="font-bold text-amber-400 flex items-center gap-1.5 text-base">
+          <i data-lucide="edit" class="w-4 h-4"></i> 編輯留言內容 (後台權限)
+        </h3>
+        <button onclick="closeEditModal()" class="text-slate-400 hover:text-white p-1 rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <input type="hidden" id="edit-id" />
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">留言者名字</label>
+          <input type="text" id="edit-author" class="w-full text-xs px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">留言內文</label>
+          <textarea id="edit-message" rows="4" class="w-full text-xs p-3 bg-slate-800 border border-slate-700 rounded-xl text-white focus:outline-none focus:border-amber-500 font-warm"></textarea>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end gap-2">
+        <button onclick="closeEditModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-xl text-xs text-slate-300">取消</button>
+        <button onclick="saveEditCard()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 font-bold rounded-xl text-xs text-slate-950">儲存更新</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 參與者手機掃碼留言互動視窗 -->
+  <div id="sender-modal" class="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-popNote border border-amber-900/10">
+      
+      <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+      
+      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
+            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="font-bold text-stone-800 text-base font-serifTc">送上教科 30 周年祝福</h3>
+            <p class="text-[11px] text-stone-400">三十而立，留下您與教科系的專屬回憶</p>
+          </div>
+        </div>
+        <button onclick="closeSenderModal()" class="text-stone-400 hover:text-stone-600 p-1.5 rounded-full hover:bg-stone-100 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- 留言表單 -->
+      <form id="wish-form" onsubmit="handleFormSubmit(event)" class="space-y-4 mt-4">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- 暱稱 / 姓名 -->
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">您的姓名 / 暱稱 <span class="text-rose-500">*</span></label>
+            <input type="text" id="input-author" required maxlength="16" placeholder="如：第15屆 宜君、阿翔" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50" />
+          </div>
+
+          <!-- 身分 / 角色選單 -->
+          <div>
+            <label class="block text-xs font-bold text-stone-700 mb-1">您的身分 <span class="text-rose-500">*</span></label>
+            <select id="input-role" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50">
+              <option value="畢業系友">🎓 畢業系友</option>
+              <option value="教科在校生">🎒 教科在校生</option>
+              <option value="系上師長">📚 系上師長 / 助教</option>
+              <option value="退休師長">🌟 退休教職員</option>
+              <option value="貴賓好友">🤝 友系 / 貴賓好友</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 心情 Emoji 選擇 -->
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1.5">選擇代表圖示</label>
+          <div class="grid grid-cols-8 gap-1.5" id="emoji-selector"></div>
+        </div>
+
+        <!-- 便利貼底色選擇 -->
+        <div>
+          <label class="block text-xs font-bold text-stone-700 mb-1.5">小卡色調</label>
+          <div class="flex items-center gap-3" id="color-selector"></div>
+        </div>
+
+        <!-- 祝福內容 -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-bold text-stone-700">祝福或回憶留言 <span class="text-rose-500">*</span></label>
+            <span id="char-count" class="text-[11px] text-stone-400">0/150</span>
+          </div>
+          <textarea id="input-message" required maxlength="150" rows="3" placeholder="想對教科系、系上老師或同學們說的話..." class="w-full text-sm p-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50 font-warm" oninput="updateCharCount()"></textarea>
+        </div>
+
+        <!-- 教科 30 週年專屬快捷錦囊 -->
+        <div>
+          <label class="block text-[11px] font-semibold text-stone-400 mb-1.5 flex items-center gap-1">
+            <i data-lucide="zap" class="w-3 h-3 text-amber-500"></i> 快速套用教科專屬祝福：
+          </label>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="applyPreset('祝淡江教科系30週年快樂！感恩師長的啟蒙，願教科繼續璀璨耀眼！✨🎓')" class="text-xs px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/60 transition">🎂 祝教科30生日快樂</button>
+            <button type="button" onclick="applyPreset('回想起在電腦教室熬夜做專題的日子，教科永遠是最溫暖的家！❤️')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">💡 電腦教室回憶</button>
+            <button type="button" onclick="applyPreset('三十而立・智慧領航！祝福教科系在AI教育科技新浪潮中繼續引領未來！🚀')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">🚀 邁向AI智慧未來</button>
+            <button type="button" onclick="applyPreset('身為教科人，終生教科人！祝系運昌隆、桃李滿天下！🌱')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">🌟 桃李滿天下</button>
+          </div>
+        </div>
+
+        <!-- 送出按鈕 -->
+        <button type="submit" class="w-full py-3 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 hover:from-amber-700 hover:to-amber-900 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-amber-700/20 transition flex items-center justify-center gap-2 mt-4">
+          <i data-lucide="send" class="w-4 h-4"></i>
+          <span>送上大螢幕祝賀</span>
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    // 卡片主題色調（柔和紙質色系）
+    const CARD_THEMES = [
+      { id: 'yellow', name: '暖杏黃', bg: 'bg-[#FEF7D8]', border: 'border-[#EEDFA3]', text: 'text-amber-950', badgeBg: 'bg-amber-200/70', badgeText: 'text-amber-900' },
+      { id: 'pink', name: '淡櫻粉', bg: 'bg-[#FCE7E9]', border: 'border-[#EFC4C9]', text: 'text-rose-950', badgeBg: 'bg-rose-200/70', badgeText: 'text-rose-900' },
+      { id: 'green', name: '薄荷綠', bg: 'bg-[#E7F5EC]', border: 'border-[#C8E8D2]', text: 'text-emerald-950', badgeBg: 'bg-emerald-200/70', badgeText: 'text-emerald-900' },
+      { id: 'blue', name: '晨曦藍', bg: 'bg-[#E3F2FD]', border: 'border-[#BEDCF5]', text: 'text-sky-950', badgeBg: 'bg-sky-200/70', badgeText: 'text-sky-900' },
+      { id: 'purple', name: '薰衣紫', bg: 'bg-[#EFEAFF]', border: 'border-[#D9CDF7]', text: 'text-purple-950', badgeBg: 'bg-purple-200/70', badgeText: 'text-purple-900' }
+    ];
+
+    const EMOJIS = ['🎓', '🎂', '✨', '❤️', '🚀', '🌱', '🎉', '💡'];
+
+    // 預設留言資料 (包含 status: APPROVED / PENDING / REJECTED, isPinned: true/false)
+    let wishes = [
+      {
+        id: 1,
+        author: '第5屆系友 家銘',
+        role: '畢業系友',
+        message: '不敢相信教科系已經 30 歲了！當年坐在工學大樓電腦教室敲鍵盤、剪教學影帶的時光歷歷在目。謝謝系上老師們當年的扎實啟發，祝教科系 30 週年生日快樂！',
+        emoji: '🎂',
+        themeId: 'yellow',
+        timestamp: '剛剛',
+        rotation: -1.2,
+        likes: 18,
+        status: 'APPROVED',
+        isPinned: true
+      },
+      {
+        id: 2,
+        author: '系主任與全體教師',
+        role: '系上師長',
+        message: '三十而立，智慧傳承。從多媒體輔助教學一路跨越到生成式 AI 時代，感謝所有系友在教育與產業界的發光發熱，教科系永遠是大家最堅實溫暖的後盾！',
+        emoji: '🌱',
+        themeId: 'green',
+        timestamp: '5分鐘前',
+        rotation: 1.4,
+        likes: 32,
+        status: 'APPROVED',
+        isPinned: true
+      },
+      {
+        id: 3,
+        author: '大四專題生 庭萱',
+        role: '教科在校生',
+        message: '在教科系四年的學習充滿挑戰與驚喜，畢業專題雖然累但真的學到超多數位學習技能。祝我們教科系 30 歲生日快樂，也祝我們這屆畢業順利！🎓✨',
+        emoji: '🎓',
+        themeId: 'pink',
+        timestamp: '12分鐘前',
+        rotation: -0.9,
+        likes: 14,
+        status: 'APPROVED',
+        isPinned: false
+      },
+      {
+        id: 4,
+        author: '第18屆 佩佩',
+        role: '畢業系友',
+        message: '今天特地回淡水走宮燈大道與文館，看到好多熟悉的老師與學弟妹！教科人的凝聚力真的永遠滿分！下個三十年繼續加油～🥂❤️',
+        emoji: '❤️',
+        themeId: 'purple',
+        timestamp: '20分鐘前',
+        rotation: 1.1,
+        likes: 21,
+        status: 'APPROVED',
+        isPinned: false
+      },
+      {
+        id: 5,
+        author: '資工系友會代表',
+        role: '貴賓好友',
+        message: '恭喜教育科技學系 30 周年慶典圓滿成功！期待在教育科技與跨域數位創新的路上，繼續攜手並進！🚀',
+        emoji: '🚀',
+        themeId: 'blue',
+        timestamp: '35分鐘前',
+        rotation: -1.5,
+        likes: 9,
+        status: 'APPROVED',
+        isPinned: false
+      }
+    ];
+
+    let selectedEmoji = '🎓';
+    let selectedThemeId = 'yellow';
+    let isAutoScrolling = false;
+    let autoScrollInterval = null;
+    
+    // Live Stream Filters
+    let currentRoleFilter = 'ALL';
+    let currentSearchKeyword = '';
+
+    // Admin Panel States
+    let isAdminOpen = false;
+    let currentAdminTab = 'moderation';
+    let currentAdminStatusFilter = 'ALL';
+    let isAutoModerateEnabled = false; // 是否先審後顯
+    let autoSimInterval = null;
+
+    // Web Audio API 溫馨清脆按鈴提示音
+    function playChimeSound() {
+      if (!document.getElementById('setting-sound').checked) return;
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const now = audioCtx.currentTime;
+        
+        const notes = [1046.50, 1318.51, 1567.98];
+        notes.forEach((freq, idx) => {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+          gain.gain.setValueAtTime(0.12, now + idx * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.6);
+
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+
+          osc.start(now + idx * 0.08);
+          osc.stop(now + idx * 0.08 + 0.65);
+        });
+      } catch (e) {
+        // 音訊若受瀏覽器權限限制則靜默跳過
+      }
+    }
+
+    // 初始化
+    function init() {
+      renderWishes();
+      setupColorSelector();
+      setupEmojiSelector();
+      initQRCodes();
+      initParticles();
+      updateAdminDashboard();
+      lucide.createIcons();
+    }
+
+    // 渲染前端大螢幕祝賀卡片牆
+    function renderWishes() {
+      const container = document.getElementById('wishes-container');
+      const emptyState = document.getElementById('empty-state');
+      const counter = document.getElementById('wish-counter');
+
+      // 篩選僅已核准 (APPROVED) 項目
+      let visible = wishes.filter(w => w.status === 'APPROVED');
+
+      // 身分 Filter
+      if (currentRoleFilter !== 'ALL') {
+        visible = visible.filter(w => w.role === currentRoleFilter);
+      }
+
+      // 關鍵字搜尋 Filter
+      if (currentSearchKeyword) {
+        const kw = currentSearchKeyword.toLowerCase();
+        visible = visible.filter(w => 
+          w.author.toLowerCase().includes(kw) || 
+          w.message.toLowerCase().includes(kw)
+        );
+      }
+
+      // 置頂優先排序
+      visible.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
+
+      counter.innerText = wishes.filter(w => w.status === 'APPROVED').length;
+
+      if (visible.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      container.innerHTML = visible.map((item) => {
+        const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
+        const rot = item.rotation || 0;
+        const pinClass = item.isPinned ? 'pinned-card' : '';
+        
+        return `
+          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-5 shadow-sm relative cursor-pointer group flex flex-col justify-between ${pinClass}"
+               style="transform: rotate(${rot}deg);"
+               onclick="openMagnifyModal(${item.id})">
+            
+            <!-- 紙膠帶效果 (置頂使用金色膠帶) -->
+            <div class="washi-tape ${item.isPinned ? 'washi-tape-gold' : ''}"></div>
+            
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-3 pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center text-xl shadow-xs">
+                    ${item.emoji}
+                  </span>
+                  <div>
+                    <div class="flex items-center gap-1">
+                      <h3 class="font-bold text-sm tracking-wide ${theme.text}">${escapeHtml(item.author)}</h3>
+                      ${item.isPinned ? '<i data-lucide="pin" class="w-3.5 h-3.5 text-amber-600 fill-amber-500"></i>' : ''}
+                    </div>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded ${theme.badgeBg} ${theme.badgeText}">
+                      ${escapeHtml(item.role || '系友')}
+                    </span>
+                  </div>
+                </div>
+                <span class="text-[11px] text-stone-400 font-medium">${item.timestamp}</span>
+              </div>
+
+              <!-- 留言正文 -->
+              <p class="text-stone-800 text-sm leading-relaxed font-warm whitespace-pre-line mb-3">
+                ${escapeHtml(item.message)}
+              </p>
+            </div>
+
+            <!-- 卡片底端小工具 -->
+            <div class="flex items-center justify-between text-xs pt-2.5 border-t border-black/5 text-stone-500">
+              <span class="text-[11px] text-stone-400 group-hover:text-amber-800 font-medium transition flex items-center gap-1">
+                <i data-lucide="maximize" class="w-3 h-3"></i> 放大檢視
+              </span>
+              <button onclick="likeCard(event, ${item.id})" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
+                <i data-lucide="heart" class="w-3.5 h-3.5 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
+                <span class="text-xs font-bold">${item.likes || 0}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    // 前端搜尋與篩選操作
+    function setRoleFilter(role) {
+      currentRoleFilter = role;
+      document.querySelectorAll('#role-filter-group .role-btn').forEach(btn => {
+        if (btn.getAttribute('data-role') === role) {
+          btn.className = 'role-btn px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 shadow-xs';
+        } else {
+          btn.className = 'role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition';
+        }
+      });
+      renderWishes();
+    }
+
+    function handleSearch(val) {
+      currentSearchKeyword = val.trim();
+      renderWishes();
+    }
+
+    // 點讚祝福
+    function likeCard(e, id) {
+      e.stopPropagation();
+      const card = wishes.find(w => w.id === id);
+      if (card) {
+        card.likes = (card.likes || 0) + 1;
+        confetti({
+          particleCount: 25,
+          spread: 45,
+          origin: {
+            x: e.clientX / window.innerWidth,
+            y: e.clientY / window.innerHeight
+          }
+        });
+        renderWishes();
+        updateAdminDashboard();
+      }
+    }
+
+    function initQRCodes() {
+      const currentUrl = window.location.href;
+      document.getElementById('custom-qr-url').value = currentUrl;
+      generateQRCodes(currentUrl);
+    }
+
+    function generateQRCodes(url) {
+      const sideContainer = document.getElementById('qrcode-display');
+      sideContainer.innerHTML = '';
+      new QRCode(sideContainer, {
+        text: url,
+        width: 140,
+        height: 140,
+        colorDark: '#451A03',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      const largeContainer = document.getElementById('qrcode-large');
+      largeContainer.innerHTML = '';
+      new QRCode(largeContainer, {
+        text: url,
+        width: 240,
+        height: 240,
+        colorDark: '#451A03',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+    }
+
+    function updateQrUrl() {
+      const input = document.getElementById('custom-qr-url');
+      const val = input.value.trim();
+      if (val) {
+        generateQRCodes(val);
+      }
+    }
+
+    function setupColorSelector() {
+      const container = document.getElementById('color-selector');
+      container.innerHTML = CARD_THEMES.map(t => `
+        <button type="button" onclick="selectTheme('${t.id}')" class="w-8 h-8 rounded-full ${t.bg} ${t.border} border-2 transition transform hover:scale-110 flex items-center justify-center shadow-xs">
+          ${t.id === selectedThemeId ? '<i data-lucide="check" class="w-4 h-4 text-stone-800"></i>' : ''}
+        </button>
+      `).join('');
+    }
+
+    function selectTheme(themeId) {
+      selectedThemeId = themeId;
+      setupColorSelector();
+      lucide.createIcons();
+    }
+
+    function setupEmojiSelector() {
+      const container = document.getElementById('emoji-selector');
+      container.innerHTML = EMOJIS.map(emo => `
+        <button type="button" onclick="selectEmoji('${emo}')" class="p-2 text-xl rounded-xl border transition ${selectedEmoji === emo ? 'bg-amber-100 border-amber-400 scale-105 shadow-sm' : 'border-stone-100 hover:bg-stone-50'}">
+          ${emo}
+        </button>
+      `).join('');
+    }
+
+    function selectEmoji(emo) {
+      selectedEmoji = emo;
+      setupEmojiSelector();
+    }
+
+    function applyPreset(text) {
+      const textarea = document.getElementById('input-message');
+      textarea.value = text;
+      updateCharCount();
+    }
+
+    function updateCharCount() {
+      const textarea = document.getElementById('input-message');
+      document.getElementById('char-count').innerText = `${textarea.value.length}/150`;
+    }
+
+    // 民眾表單送出留言
+    function handleFormSubmit(e) {
+      e.preventDefault();
+      const author = document.getElementById('input-author').value.trim();
+      const role = document.getElementById('input-role').value;
+      let message = document.getElementById('input-message').value.trim();
+
+      if (!author || !message) return;
+
+      // 敏感詞過濾
+      const sensitiveInput = document.getElementById('setting-sensitive-words').value;
+      const sensitiveWords = sensitiveInput.split(',').map(s => s.trim()).filter(Boolean);
+      sensitiveWords.forEach(word => {
+        const reg = new RegExp(word, 'gi');
+        message = message.replace(reg, '***');
+      });
+
+      const randomRot = (Math.random() * 3.6 - 1.8).toFixed(1);
+      const isApproved = !isAutoModerateEnabled; // 若啟用了先審後顯，則預設 PENDING
+
+      const newWish = {
+        id: Date.now(),
+        author: author,
+        role: role,
+        message: message,
+        emoji: selectedEmoji,
+        themeId: selectedThemeId,
+        timestamp: '剛剛',
+        rotation: parseFloat(randomRot),
+        likes: 1,
+        status: isApproved ? 'APPROVED' : 'PENDING',
+        isPinned: false
+      };
+
+      wishes.unshift(newWish);
+      renderWishes();
+      updateAdminDashboard();
+      playChimeSound();
+
+      if (isApproved) {
+        confetti({
+          particleCount: 100,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#D4AF37', '#F59E0B', '#F43F5E', '#10B981', '#6366F1']
+        });
+      }
+
+      closeSenderModal();
+      document.getElementById('wish-form').reset();
+      updateCharCount();
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // 隨機模擬現場祝賀
+    function triggerManualSim() {
+      const demoPool = [
+        { author: '第10屆系友 志偉', role: '畢業系友', message: '看著教科系邁入30周年，內心滿滿驕傲！祝福母系欣欣向榮，培育更多數位教育英才！🎓', emoji: '🎉', themeId: 'yellow' },
+        { author: '教育科技碩士班 佳玲', role: '教科在校生', message: '在教科系做研究、學科技教學，每天都很充實！祝教科系 30 歲生日快樂！🎂', emoji: '💡', themeId: 'blue' },
+        { author: '退休教授 敬賀', role: '退休師長', message: '三十年前篳路藍縷，如今開枝散葉。看到教科人的成就深感欣慰，祝福大家平安喜樂！🌱', emoji: '✨', themeId: 'green' },
+        { author: '第22屆 冠宇', role: '畢業系友', message: '文館B208電腦教室永遠有我們的汗水與笑聲！教科30歲快樂！❤️', emoji: '❤️', themeId: 'pink' }
+      ];
+
+      const item = demoPool[Math.floor(Math.random() * demoPool.length)];
+      const randomRot = (Math.random() * 3.6 - 1.8).toFixed(1);
+
+      wishes.unshift({
+        id: Date.now(),
+        author: item.author,
+        role: item.role,
+        message: item.message,
+        emoji: item.emoji,
+        themeId: item.themeId,
+        timestamp: '剛剛',
+        rotation: parseFloat(randomRot),
+        likes: Math.floor(Math.random() * 5) + 1,
+        status: isAutoModerateEnabled ? 'PENDING' : 'APPROVED',
+        isPinned: false
+      });
+
+      renderWishes();
+      updateAdminDashboard();
+      playChimeSound();
+
+      if (!isAutoModerateEnabled) {
+        confetti({
+          particleCount: 45,
+          spread: 50,
+          origin: { y: 0.5 }
+        });
+      }
+    }
+
+    function toggleAutoSim() {
+      const btn = document.getElementById('auto-sim-btn');
+      const statusText = document.getElementById('sim-status');
+      if (autoSimInterval) {
+        clearInterval(autoSimInterval);
+        autoSimInterval = null;
+        btn.className = 'flex-1 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1';
+        statusText.innerText = '靜止';
+        statusText.className = 'text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 font-normal';
+      } else {
+        triggerManualSim();
+        autoSimInterval = setInterval(triggerManualSim, 7000);
+        btn.className = 'flex-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition shadow-xs flex items-center justify-center gap-1';
+        statusText.innerText = '自動模擬中';
+        statusText.className = 'text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold animate-pulse';
+      }
+      lucide.createIcons();
+    }
+
+    // ==========================================
+    // 後台管理中心 Logic (Admin Operations)
+    // ==========================================
+    function toggleAdminDrawer() {
+      const drawer = document.getElementById('admin-drawer');
+      isAdminOpen = !isAdminOpen;
+      if (isAdminOpen) {
+        drawer.classList.remove('translate-x-full');
+        updateAdminDashboard();
+      } else {
+        drawer.classList.add('translate-x-full');
+      }
+    }
+
+    function switchAdminTab(tabName) {
+      currentAdminTab = tabName;
+      document.getElementById('admin-tab-moderation').classList.add('hidden');
+      document.getElementById('admin-tab-stats').classList.add('hidden');
+      document.getElementById('admin-tab-settings').classList.add('hidden');
+
+      document.getElementById('tab-btn-moderation').className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
+      document.getElementById('tab-btn-stats').className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
+      document.getElementById('tab-btn-settings').className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
+
+      if (tabName === 'moderation') {
+        document.getElementById('admin-tab-moderation').classList.remove('hidden');
+        document.getElementById('tab-btn-moderation').className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
+      } else if (tabName === 'stats') {
+        document.getElementById('admin-tab-stats').classList.remove('hidden');
+        document.getElementById('tab-btn-stats').className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
+      } else if (tabName === 'settings') {
+        document.getElementById('admin-tab-settings').classList.remove('hidden');
+        document.getElementById('tab-btn-settings').className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
+      }
+    }
+
+    function setAdminStatusFilter(status) {
+      currentAdminStatusFilter = status;
+      ['ALL', 'PENDING', 'APPROVED', 'REJECTED'].forEach(st => {
+        const btn = document.getElementById(`admin-st-${st}`);
+        if (st === status) {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold';
+        } else {
+          btn.className = 'px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600';
+        }
+      });
+      renderAdminList();
+    }
+
+    function updateAdminDashboard() {
+      // 統計數據更新
+      const cntAll = wishes.length;
+      const pendingList = wishes.filter(w => w.status === 'PENDING');
+      const cntPending = pendingList.length;
+      const cntApproved = wishes.filter(w => w.status === 'APPROVED').length;
+      const cntRejected = wishes.filter(w => w.status === 'REJECTED').length;
+      const totalLikes = wishes.reduce((sum, w) => sum + (w.likes || 0), 0);
+      const pinnedCnt = wishes.filter(w => w.isPinned).length;
+
+      document.getElementById('cnt-all').innerText = cntAll;
+      document.getElementById('cnt-pending').innerText = cntPending;
+      document.getElementById('cnt-approved').innerText = cntApproved;
+      document.getElementById('cnt-rejected').innerText = cntRejected;
+
+      // 未審核 Badge
+      const badge = document.getElementById('pending-badge');
+      if (cntPending > 0) {
+        badge.innerText = cntPending;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+
+      // Stats Tab Values
+      document.getElementById('stat-total').innerText = cntAll;
+      document.getElementById('stat-rate').innerText = cntAll > 0 ? `${Math.round((cntApproved / cntAll) * 100)}%` : '100%';
+      document.getElementById('stat-likes').innerText = totalLikes;
+      document.getElementById('stat-pinned').innerText = pinnedCnt;
+
+      // 渲染統計比例 Chart
+      renderRoleStatsChart();
+      renderAdminList();
+    }
+
+    function renderRoleStatsChart() {
+      const container = document.getElementById('role-chart-container');
+      const roles = ['畢業系友', '教科在校生', '系上師長', '貴賓好友'];
+      const total = wishes.length || 1;
+
+      container.innerHTML = roles.map(role => {
+        const count = wishes.filter(w => w.role === role || (role === '系上師長' && w.role === '退休師長')).length;
+        const pct = Math.round((count / total) * 100);
+        return `
+          <div>
+            <div class="flex justify-between text-xs text-slate-300 mb-1">
+              <span>${role}</span>
+              <span>${count} 則 (${pct}%)</span>
+            </div>
+            <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
+              <div class="bg-gradient-to-r from-amber-500 to-amber-300 h-full transition-all duration-500" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderAdminList() {
+      const container = document.getElementById('admin-message-list');
+      let filtered = wishes;
+
+      if (currentAdminStatusFilter !== 'ALL') {
+        filtered = wishes.filter(w => w.status === currentAdminStatusFilter);
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = '<div class="text-center py-10 text-slate-500 text-xs">此分類下尚無留言項目</div>';
+        return;
+      }
+
+      container.innerHTML = filtered.map(w => {
+        let statusBadge = '';
+        if (w.status === 'APPROVED') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">已展示</span>';
+        else if (w.status === 'PENDING') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">待審核</span>';
+        else if (w.status === 'REJECTED') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold">已隱藏</span>';
+
+        return `
+          <div class="p-4 rounded-2xl bg-slate-800 border border-slate-700/80 flex flex-col gap-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-lg">${w.emoji}</span>
+                <span class="font-bold text-sm text-slate-100">${escapeHtml(w.author)}</span>
+                <span class="text-[10px] px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded">${escapeHtml(w.role)}</span>
+                ${statusBadge}
+                ${w.isPinned ? '<span class="text-[10px] px-1.5 py-0.5 bg-amber-500/30 text-amber-300 rounded flex items-center gap-0.5"><i data-lucide="pin" class="w-2.5 h-2.5"></i> 置頂</span>' : ''}
+              </div>
+              <span class="text-[11px] text-slate-500">${w.timestamp}</span>
+            </div>
+
+            <p class="text-xs text-slate-300 font-warm leading-relaxed bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/50">
+              ${escapeHtml(w.message)}
+            </p>
+
+            <!-- 操作按鈕列 -->
+            <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-700/50">
+              <div class="flex items-center gap-1.5">
+                ${w.status !== 'APPROVED' ? `<button onclick="setCardStatus(${w.id}, 'APPROVED')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 rounded-lg font-medium transition">展示</button>` : ''}
+                ${w.status !== 'REJECTED' ? `<button onclick="setCardStatus(${w.id}, 'REJECTED')" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 rounded-lg font-medium transition">隱藏</button>` : ''}
+                <button onclick="togglePinCard(${w.id})" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg font-medium transition">
+                  ${w.isPinned ? '取消置頂' : '設為置頂'}
+                </button>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <button onclick="openEditModal(${w.id})" class="text-slate-400 hover:text-amber-400 p-1" title="編輯內容">
+                  <i data-lucide="edit-2" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deleteCard(${w.id})" class="text-slate-400 hover:text-rose-400 p-1" title="永久刪除">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      lucide.createIcons();
+    }
+
+    function setCardStatus(id, status) {
+      const card = wishes.find(w => w.id === id);
+      if (card) {
+        card.status = status;
+        renderWishes();
+        updateAdminDashboard();
+      }
+    }
+
+    function togglePinCard(id) {
+      const card = wishes.find(w => w.id === id);
+      if (card) {
+        card.isPinned = !card.isPinned;
+        renderWishes();
+        updateAdminDashboard();
+      }
+    }
+
+    function batchApprovePending() {
+      wishes.forEach(w => {
+        if (w.status === 'PENDING') w.status = 'APPROVED';
+      });
+      renderWishes();
+      updateAdminDashboard();
+    }
+
+    function deleteCard(id) {
+      wishes = wishes.filter(w => w.id !== id);
+      renderWishes();
+      updateAdminDashboard();
+    }
+
+    function openEditModal(id) {
+      const card = wishes.find(w => w.id === id);
+      if (!card) return;
+      document.getElementById('edit-id').value = card.id;
+      document.getElementById('edit-author').value = card.author;
+      document.getElementById('edit-message').value = card.message;
+      document.getElementById('edit-modal').classList.remove('hidden');
+    }
+
+    function closeEditModal() {
+      document.getElementById('edit-modal').classList.add('hidden');
+    }
+
+    function saveEditCard() {
+      const id = parseInt(document.getElementById('edit-id').value);
+      const card = wishes.find(w => w.id === id);
+      if (card) {
+        card.author = document.getElementById('edit-author').value.trim();
+        card.message = document.getElementById('edit-message').value.trim();
+        renderWishes();
+        updateAdminDashboard();
+      }
+      closeEditModal();
+    }
+
+    function toggleAutoModerateSetting(checked) {
+      isAutoModerateEnabled = checked;
+    }
+
+    // Modal Operations
+    function openSenderModal() {
+      document.getElementById('sender-modal').classList.remove('hidden');
+    }
+    function closeSenderModal() {
+      document.getElementById('sender-modal').classList.add('hidden');
+    }
+
+    function openQrModal() {
+      document.getElementById('qr-modal').classList.remove('hidden');
+    }
+    function closeQrModal() {
+      document.getElementById('qr-modal').classList.add('hidden');
+    }
+
+    function openMagnifyModal(id) {
+      const item = wishes.find(w => w.id === id);
+      if (!item) return;
+
+      const modal = document.getElementById('magnify-modal');
+      const box = document.getElementById('magnify-card-content');
+      const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
+
+      box.className = `relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
+
+      document.getElementById('mag-avatar').innerText = item.emoji;
+      document.getElementById('mag-name').innerText = item.author;
+      
+      const roleBadge = document.getElementById('mag-role');
+      roleBadge.innerText = item.role || '系友';
+      roleBadge.className = `text-xs px-2.5 py-0.5 rounded-md font-bold ${theme.badgeBg} ${theme.badgeText}`;
+
+      document.getElementById('mag-time').innerText = item.timestamp;
+      document.getElementById('mag-text').innerText = item.message;
+
+      const likeBtn = document.getElementById('mag-like-btn');
+      document.getElementById('mag-like-count').innerText = `送上祝福 (${item.likes || 0})`;
+      likeBtn.onclick = (e) => {
+        likeCard(e, item.id);
+        document.getElementById('mag-like-count').innerText = `送上祝福 (${item.likes || 0})`;
+      };
+
+      modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeMagnifyModal() {
+      document.getElementById('magnify-modal').classList.add('hidden');
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // 舞台自動滾動 / 輪播
+    function toggleAutoScroll() {
+      isAutoScrolling = !isAutoScrolling;
+      const btnIcon = document.getElementById('autoscroll-icon');
+      const btnLabel = document.getElementById('autoscroll-label');
+
+      if (isAutoScrolling) {
+        btnIcon.setAttribute('data-lucide', 'pause');
+        btnLabel.innerText = '暫停輪播';
+        startAutoScroll();
+      } else {
+        btnIcon.setAttribute('data-lucide', 'play');
+        btnLabel.innerText = '舞台輪播';
+        clearInterval(autoScrollInterval);
+      }
+      lucide.createIcons();
+    }
+
+    function startAutoScroll() {
+      clearInterval(autoScrollInterval);
+      let direction = 1;
+      autoScrollInterval = setInterval(() => {
+        window.scrollBy({
+          top: 1.5 * direction,
+          behavior: 'smooth'
+        });
+
+        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 8) {
+          direction = -1;
+        } else if (window.scrollY <= 0) {
+          direction = 1;
+        }
+      }, 55);
+    }
+
+    // 匯出祝福內容為文字檔留存
+    function exportWishes() {
+      const dataStr = wishes.map((w, idx) => `[${idx + 1}] ${w.author} (${w.role}) - 狀態: ${w.status} - 時間: ${w.timestamp}\n${w.message}\n`).join('\n---\n\n');
+      const blob = new Blob([`淡江大學教育科技系 30 周年慶・數位祝福名冊\n匯出時間：${new Date().toLocaleString()}\n\n${dataStr}`], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `淡江教科30周年祝福名冊_${new Date().toISOString().slice(0,10)}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function escapeHtml(string) {
+      const div = document.createElement('div');
+      div.innerText = string;
+      return div.innerHTML;
+    }
+
+    function initParticles() {
+      const canvas = document.getElementById('ambient-canvas');
+      const ctx = canvas.getContext('2d');
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      // 溫暖金色與慶祝微光粒子
+      const particles = Array.from({ length: 35 }, () => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        r: Math.random() * 3 + 1,
+        dx: (Math.random() - 0.5) * 0.35,
+        dy: (Math.random() - 0.5) * 0.35,
+        alpha: Math.random() * 0.4 + 0.15,
+        color: ['#D4AF37', '#F59E0B', '#E2B870', '#800000', '#10B981'][Math.floor(Math.random() * 5)]
+      }));
+
+      function renderLoop() {
+        ctx.clearRect(0, 0, width, height);
+        particles.forEach(p => {
+          p.x += p.dx;
+          p.y += p.dy;
+
+          if (p.x < 0) p.x = width;
+          if (p.x > width) p.x = 0;
+          if (p.y < 0) p.y = height;
+          if (p.y > height) p.y = 0;
+
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.color;
+          ctx.globalAlpha = p.alpha;
+          ctx.fill();
+        });
+        ctx.globalAlpha = 1;
+        requestAnimationFrame(renderLoop);
+      }
+      renderLoop();
+    }
+
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

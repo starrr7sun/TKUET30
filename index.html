@@ -157,7 +157,7 @@
             </span>
             <span class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
               <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              現場互動即時投影
+              跨裝置即時雲端同步
             </span>
           </div>
           <h1 class="text-xl md:text-2xl lg:text-3xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">
@@ -628,10 +628,191 @@
     </div>
   </div>
 
+  <!-- Firebase JavaScript SDK Modular Setup -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { 
+      getFirestore, 
+      collection, 
+      doc, 
+      setDoc, 
+      updateDoc, 
+      deleteDoc, 
+      onSnapshot, 
+      getDocs 
+    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // 環境變數讀取
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'tku-et-30th-wishing-wall';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' 
+      ? JSON.parse(__firebase_config) 
+      : {
+          apiKey: "demo-key",
+          authDomain: "demo.firebaseapp.com",
+          projectId: "demo-project",
+          storageBucket: "demo.appspot.com",
+          messagingSenderId: "000000000000",
+          appId: "1:000000000000:web:000000000000"
+        };
+
+    // 初始化 Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // 全局變數暴露
+    window.db = db;
+    window.auth = auth;
+    window.appId = appId;
+    window.collection = collection;
+    window.doc = doc;
+    window.setDoc = setDoc;
+    window.updateDoc = updateDoc;
+    window.deleteDoc = deleteDoc;
+    window.getDocs = getDocs;
+
+    // 定義存取 Firestore 集合路徑
+    const wishesCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
+    const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
+
+    // 進行身份認證
+    async function initAuthAndData() {
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+          await signInAnonymously(auth);
+        }
+
+        // 監聽即時數據變動 (跨裝置同步)
+        onSnapshot(wishesCollectionRef, (snapshot) => {
+          const cloudWishes = [];
+          snapshot.forEach((document) => {
+            cloudWishes.push({ id: document.id, ...document.data() });
+          });
+
+          // 若資料庫完全沒有初始資料，則寫入預設祝福內容
+          if (cloudWishes.length === 0 && !window.hasInitializedDefault) {
+            window.hasInitializedDefault = true;
+            seedDefaultWishes();
+            return;
+          }
+
+          // 按創建時間逆序排序
+          cloudWishes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          window.wishes = cloudWishes;
+
+          // 重新渲染畫面與後台
+          if (window.renderWishes) window.renderWishes();
+          if (window.updateAdminDashboard) window.updateAdminDashboard();
+        }, (error) => {
+          console.error("Firestore wishes stream error:", error);
+        });
+
+        // 監聽設定變動
+        onSnapshot(settingsDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            window.isAutoModerateEnabled = !!data.autoModerate;
+            const autoModCheckbox = document.getElementById('setting-auto-moderate');
+            if (autoModCheckbox) autoModCheckbox.checked = window.isAutoModerateEnabled;
+            if (data.sensitiveWords) {
+              const sensInput = document.getElementById('setting-sensitive-words');
+              if (sensInput) sensInput.value = data.sensitiveWords;
+            }
+          }
+        }, (error) => {
+          console.error("Firestore settings stream error:", error);
+        });
+
+      } catch (err) {
+        console.error("Auth / Initialization error:", err);
+      }
+    }
+
+    // 預設示範資料初始化寫入
+    async function seedDefaultWishes() {
+      const DEFAULT_WISHES = [
+        {
+          author: '第5屆系友 家銘',
+          role: '畢業系友',
+          message: '不敢相信教科系已經 30 歲了！當年坐在工學大樓電腦教室敲鍵盤、剪教學影帶的時光歷歷在目。謝謝系上老師們當年的扎實啟發，祝教科系 30 週年生日快樂！',
+          emoji: '🎂',
+          themeId: 'yellow',
+          timestamp: '剛剛',
+          rotation: -1.2,
+          likes: 18,
+          status: 'APPROVED',
+          isPinned: true,
+          createdAt: Date.now() - 1000
+        },
+        {
+          author: '系主任與全體教師',
+          role: '系上師長',
+          message: '三十而立，智慧傳承。從多媒體輔助教學一路跨越到生成式 AI 時代，感謝所有系友在教育與產業界的發光發熱，教科系永遠是大家最堅實溫暖的後盾！',
+          emoji: '🌱',
+          themeId: 'green',
+          timestamp: '5分鐘前',
+          rotation: 1.4,
+          likes: 32,
+          status: 'APPROVED',
+          isPinned: true,
+          createdAt: Date.now() - 2000
+        },
+        {
+          author: '大四專題生 庭萱',
+          role: '教科在校生',
+          message: '在教科系四年的學習充滿挑戰與驚喜，畢業專題雖然累但真的學到超多數位學習技能。祝我們教科系 30 歲生日快樂，也祝我們這屆畢業順利！🎓✨',
+          emoji: '🎓',
+          themeId: 'pink',
+          timestamp: '12分鐘前',
+          rotation: -0.9,
+          likes: 14,
+          status: 'APPROVED',
+          isPinned: false,
+          createdAt: Date.now() - 3000
+        },
+        {
+          author: '第18屆 佩佩',
+          role: '畢業系友',
+          message: '今天特地回淡水走宮燈大道與文館，看到好多熟悉的老師與學弟妹！教科人的凝聚力真的永遠滿分！下個三十年繼續加油～🥂❤️',
+          emoji: '❤️',
+          themeId: 'purple',
+          timestamp: '20分鐘前',
+          rotation: 1.1,
+          likes: 21,
+          status: 'APPROVED',
+          isPinned: false,
+          createdAt: Date.now() - 4000
+        },
+        {
+          author: '資工系友會代表',
+          role: '貴賓好友',
+          message: '恭喜教育科技學系 30 周年慶典圓滿成功！期待在教育科技與跨域數位創新的路上，繼續攜手並進！🚀',
+          emoji: '🚀',
+          themeId: 'blue',
+          timestamp: '35分鐘前',
+          rotation: -1.5,
+          likes: 9,
+          status: 'APPROVED',
+          isPinned: false,
+          createdAt: Date.now() - 5000
+        }
+      ];
+
+      for (const wish of DEFAULT_WISHES) {
+        const newRef = doc(wishesCollectionRef);
+        await setDoc(newRef, wish);
+      }
+    }
+
+    // 啟動認證與資料流監聽
+    initAuthAndData();
+  </script>
+
   <script>
-    // LocalStorage Keys & Administrative Secrets
-    const STORAGE_WISHES_KEY = 'tku_et_30th_wishes_v1';
-    const STORAGE_SETTINGS_KEY = 'tku_et_30th_settings_v1';
+    // 常數與全域設定
     const ADMIN_SESSION_KEY = 'tku_et_30th_admin_authed';
     const VALID_PASSWORDS = ['tku30', 'et30', 'tku30th'];
 
@@ -646,76 +827,7 @@
 
     const EMOJIS = ['🎓', '🎂', '✨', '❤️', '🚀', '🌱', '🎉', '💡'];
 
-    // 預設示範資料（當 LocalStorage 尚無資料時讀取）
-    const DEFAULT_WISHES = [
-      {
-        id: 1,
-        author: '第5屆系友 家銘',
-        role: '畢業系友',
-        message: '不敢相信教科系已經 30 歲了！當年坐在工學大樓電腦教室敲鍵盤、剪教學影帶的時光歷歷在目。謝謝系上老師們當年的扎實啟發，祝教科系 30 週年生日快樂！',
-        emoji: '🎂',
-        themeId: 'yellow',
-        timestamp: '剛剛',
-        rotation: -1.2,
-        likes: 18,
-        status: 'APPROVED',
-        isPinned: true
-      },
-      {
-        id: 2,
-        author: '系主任與全體教師',
-        role: '系上師長',
-        message: '三十而立，智慧傳承。從多媒體輔助教學一路跨越到生成式 AI 時代，感謝所有系友在教育與產業界的發光發熱，教科系永遠是大家最堅實溫暖的後盾！',
-        emoji: '🌱',
-        themeId: 'green',
-        timestamp: '5分鐘前',
-        rotation: 1.4,
-        likes: 32,
-        status: 'APPROVED',
-        isPinned: true
-      },
-      {
-        id: 3,
-        author: '大四專題生 庭萱',
-        role: '教科在校生',
-        message: '在教科系四年的學習充滿挑戰與驚喜，畢業專題雖然累但真的學到超多數位學習技能。祝我們教科系 30 歲生日快樂，也祝我們這屆畢業順利！🎓✨',
-        emoji: '🎓',
-        themeId: 'pink',
-        timestamp: '12分鐘前',
-        rotation: -0.9,
-        likes: 14,
-        status: 'APPROVED',
-        isPinned: false
-      },
-      {
-        id: 4,
-        author: '第18屆 佩佩',
-        role: '畢業系友',
-        message: '今天特地回淡水走宮燈大道與文館，看到好多熟悉的老師與學弟妹！教科人的凝聚力真的永遠滿分！下個三十年繼續加油～🥂❤️',
-        emoji: '❤️',
-        themeId: 'purple',
-        timestamp: '20分鐘前',
-        rotation: 1.1,
-        likes: 21,
-        status: 'APPROVED',
-        isPinned: false
-      },
-      {
-        id: 5,
-        author: '資工系友會代表',
-        role: '貴賓好友',
-        message: '恭喜教育科技學系 30 周年慶典圓滿成功！期待在教育科技與跨域數位創新的路上，繼續攜手並進！🚀',
-        emoji: '🚀',
-        themeId: 'blue',
-        timestamp: '35分鐘前',
-        rotation: -1.5,
-        likes: 9,
-        status: 'APPROVED',
-        isPinned: false
-      }
-    ];
-
-    let wishes = [];
+    window.wishes = [];
     let selectedEmoji = '🎓';
     let selectedThemeId = 'yellow';
     let isAutoScrolling = false;
@@ -730,66 +842,21 @@
     let isAdminAuthenticated = false;
     let currentAdminTab = 'moderation';
     let currentAdminStatusFilter = 'ALL';
-    let isAutoModerateEnabled = false; // 是否先審後顯
+    window.isAutoModerateEnabled = false; 
     let autoSimInterval = null;
 
     // 徽章點擊計數器 (隱藏式觸發解鎖)
     let badgeClickCount = 0;
     let badgeClickTimer = null;
 
-    // 讀取 LocalStorage 數據
-    function loadFromLocalStorage() {
-      try {
-        const savedWishes = localStorage.getItem(STORAGE_WISHES_KEY);
-        if (savedWishes) {
-          wishes = JSON.parse(savedWishes);
-        } else {
-          wishes = [...DEFAULT_WISHES];
-          saveToLocalStorage();
-        }
-
-        const savedSettings = localStorage.getItem(STORAGE_SETTINGS_KEY);
-        if (savedSettings) {
-          const settings = JSON.parse(savedSettings);
-          isAutoModerateEnabled = !!settings.autoModerate;
-          const autoModCheckbox = document.getElementById('setting-auto-moderate');
-          if (autoModCheckbox) autoModCheckbox.checked = isAutoModerateEnabled;
-          if (settings.sensitiveWords) {
-            const sensInput = document.getElementById('setting-sensitive-words');
-            if (sensInput) sensInput.value = settings.sensitiveWords;
-          }
-        }
-      } catch (e) {
-        console.warn('LocalStorage 讀取失敗，改用記憶體資料:', e);
-        wishes = [...DEFAULT_WISHES];
-      }
-    }
-
-    // 保存至 LocalStorage
-    function saveToLocalStorage() {
-      try {
-        localStorage.setItem(STORAGE_WISHES_KEY, JSON.stringify(wishes));
-        const settings = {
-          autoModerate: isAutoModerateEnabled,
-          sensitiveWords: document.getElementById('setting-sensitive-words')?.value || '廣告, 詐騙, 買粉'
-        };
-        localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(settings));
-      } catch (e) {
-        console.warn('LocalStorage 儲存失敗:', e);
-      }
-    }
-
-    // 初始化
+    // 初始化應用程式
     function init() {
-      loadFromLocalStorage();
       checkAdminPermission();
       setupBadgeSecretClick();
-      renderWishes();
       setupColorSelector();
       setupEmojiSelector();
       initQRCodes();
       initParticles();
-      updateAdminDashboard();
       lucide.createIcons();
     }
 
@@ -818,7 +885,6 @@
       } else {
         if (adminBtn) adminBtn.classList.add('hidden');
         if (unlockBtn) unlockBtn.classList.remove('hidden');
-        // 若權限被取消且後台開啟中，自動關閉
         if (isAdminOpen) {
           toggleAdminDrawer();
         }
@@ -886,10 +952,10 @@
       updateAdminUI();
     }
 
-    // 產生 QR Code 時強制寫入訪客網址，避免管理者權限洩漏
+    // 產生 QR Code 時強制寫入訪客網址 (?role=guest)
     function initQRCodes() {
       const rawUrl = new URL(window.location.href);
-      rawUrl.searchParams.set('role', 'guest'); // 強制附帶訪客參數
+      rawUrl.searchParams.set('role', 'guest');
       const guestUrl = rawUrl.toString();
 
       document.getElementById('custom-qr-url').value = guestUrl;
@@ -928,7 +994,7 @@
       }
     }
 
-    // Web Audio API 溫馨清脆按鈴提示音
+    // Web Audio API 音效
     function playChimeSound() {
       const soundEnabled = document.getElementById('setting-sound')?.checked;
       if (soundEnabled === false) return;
@@ -954,37 +1020,33 @@
           osc.stop(now + idx * 0.08 + 0.65);
         });
       } catch (e) {
-        // 音訊若受瀏覽器權限限制則靜默跳過
+        // 音訊受限靜默跳過
       }
     }
 
-    // 渲染前端大螢幕祝賀卡片牆
+    // 渲染大螢幕祝福牆卡片
     function renderWishes() {
       const container = document.getElementById('wishes-container');
       const emptyState = document.getElementById('empty-state');
       const counter = document.getElementById('wish-counter');
 
-      // 篩選僅已核准 (APPROVED) 項目
-      let visible = wishes.filter(w => w.status === 'APPROVED');
+      let visible = (window.wishes || []).filter(w => w.status === 'APPROVED');
 
-      // 身分 Filter
       if (currentRoleFilter !== 'ALL') {
         visible = visible.filter(w => w.role === currentRoleFilter);
       }
 
-      // 關鍵字搜尋 Filter
       if (currentSearchKeyword) {
         const kw = currentSearchKeyword.toLowerCase();
         visible = visible.filter(w => 
-          w.author.toLowerCase().includes(kw) || 
-          w.message.toLowerCase().includes(kw)
+          (w.author && w.author.toLowerCase().includes(kw)) || 
+          (w.message && w.message.toLowerCase().includes(kw))
         );
       }
 
-      // 置頂優先排序
       visible.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
 
-      counter.innerText = wishes.filter(w => w.status === 'APPROVED').length;
+      counter.innerText = (window.wishes || []).filter(w => w.status === 'APPROVED').length;
 
       if (visible.length === 0) {
         container.innerHTML = '';
@@ -1001,20 +1063,19 @@
         return `
           <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-5 shadow-sm relative cursor-pointer group flex flex-col justify-between ${pinClass}"
                style="transform: rotate(${rot}deg);"
-               onclick="openMagnifyModal(${item.id})">
+               onclick="openMagnifyModal('${item.id}')">
             
-            <!-- 紙膠帶效果 (置頂使用金色膠帶) -->
             <div class="washi-tape ${item.isPinned ? 'washi-tape-gold' : ''}"></div>
             
             <div>
               <div class="flex items-center justify-between gap-2 mb-3 pt-1">
                 <div class="flex items-center gap-2">
                   <span class="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center text-xl shadow-xs">
-                    ${item.emoji}
+                    ${item.emoji || '🎓'}
                   </span>
                   <div>
                     <div class="flex items-center gap-1">
-                      <h3 class="font-bold text-sm tracking-wide ${theme.text}">${escapeHtml(item.author)}</h3>
+                      <h3 class="font-bold text-sm tracking-wide ${theme.text}">${escapeHtml(item.author || '')}</h3>
                       ${item.isPinned ? '<i data-lucide="pin" class="w-3.5 h-3.5 text-amber-600 fill-amber-500"></i>' : ''}
                     </div>
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded ${theme.badgeBg} ${theme.badgeText}">
@@ -1022,21 +1083,19 @@
                     </span>
                   </div>
                 </div>
-                <span class="text-[11px] text-stone-400 font-medium">${item.timestamp}</span>
+                <span class="text-[11px] text-stone-400 font-medium">${item.timestamp || '剛剛'}</span>
               </div>
 
-              <!-- 留言正文 -->
               <p class="text-stone-800 text-sm leading-relaxed font-warm whitespace-pre-line mb-3">
-                ${escapeHtml(item.message)}
+                ${escapeHtml(item.message || '')}
               </p>
             </div>
 
-            <!-- 卡片底端小工具 -->
             <div class="flex items-center justify-between text-xs pt-2.5 border-t border-black/5 text-stone-500">
               <span class="text-[11px] text-stone-400 group-hover:text-amber-800 font-medium transition flex items-center gap-1">
                 <i data-lucide="maximize" class="w-3 h-3"></i> 放大檢視
               </span>
-              <button onclick="likeCard(event, ${item.id})" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
+              <button onclick="likeCard(event, '${item.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
                 <i data-lucide="heart" class="w-3.5 h-3.5 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
                 <span class="text-xs font-bold">${item.likes || 0}</span>
               </button>
@@ -1047,6 +1106,7 @@
 
       lucide.createIcons();
     }
+    window.renderWishes = renderWishes;
 
     // 前端搜尋與篩選操作
     function setRoleFilter(role) {
@@ -1066,23 +1126,26 @@
       renderWishes();
     }
 
-    // 點讚祝福
-    function likeCard(e, id) {
+    // 即時點讚 (雲端同步)
+    async function likeCard(e, id) {
       e.stopPropagation();
-      const card = wishes.find(w => w.id === id);
-      if (card) {
-        card.likes = (card.likes || 0) + 1;
-        saveToLocalStorage(); // 同步至 LocalStorage
-        confetti({
-          particleCount: 25,
-          spread: 45,
-          origin: {
-            x: e.clientX / window.innerWidth,
-            y: e.clientY / window.innerHeight
-          }
-        });
-        renderWishes();
-        updateAdminDashboard();
+      const card = (window.wishes || []).find(w => w.id === id);
+      if (card && window.db) {
+        const newLikes = (card.likes || 0) + 1;
+        try {
+          const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
+          await window.updateDoc(docRef, { likes: newLikes });
+          confetti({
+            particleCount: 25,
+            spread: 45,
+            origin: {
+              x: e.clientX / window.innerWidth,
+              y: e.clientY / window.innerHeight
+            }
+          });
+        } catch (err) {
+          console.error("更新點讚數失敗:", err);
+        }
       }
     }
 
@@ -1126,8 +1189,8 @@
       document.getElementById('char-count').innerText = `${textarea.value.length}/150`;
     }
 
-    // 民眾表單送出留言
-    function handleFormSubmit(e) {
+    // 表單送出祝福 (雲端同步)
+    async function handleFormSubmit(e) {
       e.preventDefault();
       const author = document.getElementById('input-author').value.trim();
       const role = document.getElementById('input-role').value;
@@ -1135,7 +1198,6 @@
 
       if (!author || !message) return;
 
-      // 敏感詞過濾
       const sensitiveInput = document.getElementById('setting-sensitive-words')?.value || '';
       const sensitiveWords = sensitiveInput.split(',').map(s => s.trim()).filter(Boolean);
       sensitiveWords.forEach(word => {
@@ -1143,48 +1205,50 @@
         message = message.replace(reg, '***');
       });
 
-      const randomRot = (Math.random() * 3.6 - 1.8).toFixed(1);
-      const isApproved = !isAutoModerateEnabled; // 若啟用了先審後顯，則預設 PENDING
+      const randomRot = parseFloat((Math.random() * 3.6 - 1.8).toFixed(1));
+      const isApproved = !window.isAutoModerateEnabled;
 
-      const newWish = {
-        id: Date.now(),
+      const newWishData = {
         author: author,
         role: role,
         message: message,
         emoji: selectedEmoji,
         themeId: selectedThemeId,
         timestamp: '剛剛',
-        rotation: parseFloat(randomRot),
+        rotation: randomRot,
         likes: 1,
         status: isApproved ? 'APPROVED' : 'PENDING',
-        isPinned: false
+        isPinned: false,
+        createdAt: Date.now()
       };
 
-      wishes.unshift(newWish);
-      saveToLocalStorage(); // 同步至 LocalStorage
+      try {
+        const newDocRef = window.doc(window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes'));
+        await window.setDoc(newDocRef, newWishData);
 
-      renderWishes();
-      updateAdminDashboard();
-      playChimeSound();
+        playChimeSound();
 
-      if (isApproved) {
-        confetti({
-          particleCount: 100,
-          spread: 80,
-          origin: { y: 0.6 },
-          colors: ['#D4AF37', '#F59E0B', '#F43F5E', '#10B981', '#6366F1']
-        });
+        if (isApproved) {
+          confetti({
+            particleCount: 100,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ['#D4AF37', '#F59E0B', '#F43F5E', '#10B981', '#6366F1']
+          });
+        }
+
+        closeSenderModal();
+        document.getElementById('wish-form').reset();
+        updateCharCount();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      } catch (err) {
+        console.error("送出祝福至雲端資料庫失敗:", err);
       }
-
-      closeSenderModal();
-      document.getElementById('wish-form').reset();
-      updateCharCount();
-
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 隨機模擬現場祝賀
-    function triggerManualSim() {
+    // 模擬現場新祝福
+    async function triggerManualSim() {
       const demoPool = [
         { author: '第10屆系友 志偉', role: '畢業系友', message: '看著教科系邁入30周年，內心滿滿驕傲！祝福母系欣欣向榮，培育更多數位教育英才！🎓', emoji: '🎉', themeId: 'yellow' },
         { author: '教育科技碩士班 佳玲', role: '教科在校生', message: '在教科系做研究、學科技教學，每天都很充實！祝教科系 30 歲生日快樂！🎂', emoji: '💡', themeId: 'blue' },
@@ -1193,33 +1257,32 @@
       ];
 
       const item = demoPool[Math.floor(Math.random() * demoPool.length)];
-      const randomRot = (Math.random() * 3.6 - 1.8).toFixed(1);
+      const randomRot = parseFloat((Math.random() * 3.6 - 1.8).toFixed(1));
 
-      wishes.unshift({
-        id: Date.now(),
+      const simWishData = {
         author: item.author,
         role: item.role,
         message: item.message,
         emoji: item.emoji,
         themeId: item.themeId,
         timestamp: '剛剛',
-        rotation: parseFloat(randomRot),
+        rotation: randomRot,
         likes: Math.floor(Math.random() * 5) + 1,
-        status: isAutoModerateEnabled ? 'PENDING' : 'APPROVED',
-        isPinned: false
-      });
+        status: window.isAutoModerateEnabled ? 'PENDING' : 'APPROVED',
+        isPinned: false,
+        createdAt: Date.now()
+      };
 
-      saveToLocalStorage(); // 同步至 LocalStorage
-      renderWishes();
-      updateAdminDashboard();
-      playChimeSound();
+      try {
+        const newDocRef = window.doc(window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes'));
+        await window.setDoc(newDocRef, simWishData);
+        playChimeSound();
 
-      if (!isAutoModerateEnabled) {
-        confetti({
-          particleCount: 45,
-          spread: 50,
-          origin: { y: 0.5 }
-        });
+        if (!window.isAutoModerateEnabled) {
+          confetti({ particleCount: 45, spread: 50, origin: { y: 0.5 } });
+        }
+      } catch (err) {
+        console.error("模擬新祝福失敗:", err);
       }
     }
 
@@ -1242,9 +1305,7 @@
       lucide.createIcons();
     }
 
-    // ==========================================
-    // 後台管理中心 Logic (Admin Operations)
-    // ==========================================
+    // 後台 Drawer
     function toggleAdminDrawer() {
       const drawer = document.getElementById('admin-drawer');
       isAdminOpen = !isAdminOpen;
@@ -1292,21 +1353,20 @@
     }
 
     function updateAdminDashboard() {
-      // 統計數據更新
-      const cntAll = wishes.length;
-      const pendingList = wishes.filter(w => w.status === 'PENDING');
+      const allList = window.wishes || [];
+      const cntAll = allList.length;
+      const pendingList = allList.filter(w => w.status === 'PENDING');
       const cntPending = pendingList.length;
-      const cntApproved = wishes.filter(w => w.status === 'APPROVED').length;
-      const cntRejected = wishes.filter(w => w.status === 'REJECTED').length;
-      const totalLikes = wishes.reduce((sum, w) => sum + (w.likes || 0), 0);
-      const pinnedCnt = wishes.filter(w => w.isPinned).length;
+      const cntApproved = allList.filter(w => w.status === 'APPROVED').length;
+      const cntRejected = allList.filter(w => w.status === 'REJECTED').length;
+      const totalLikes = allList.reduce((sum, w) => sum + (w.likes || 0), 0);
+      const pinnedCnt = allList.filter(w => w.isPinned).length;
 
       document.getElementById('cnt-all').innerText = cntAll;
       document.getElementById('cnt-pending').innerText = cntPending;
       document.getElementById('cnt-approved').innerText = cntApproved;
       document.getElementById('cnt-rejected').innerText = cntRejected;
 
-      // 未審核 Badge
       const badge = document.getElementById('pending-badge');
       if (cntPending > 0) {
         badge.innerText = cntPending;
@@ -1315,24 +1375,23 @@
         badge.classList.add('hidden');
       }
 
-      // Stats Tab Values
       document.getElementById('stat-total').innerText = cntAll;
       document.getElementById('stat-rate').innerText = cntAll > 0 ? `${Math.round((cntApproved / cntAll) * 100)}%` : '100%';
       document.getElementById('stat-likes').innerText = totalLikes;
       document.getElementById('stat-pinned').innerText = pinnedCnt;
 
-      // 渲染統計比例 Chart
       renderRoleStatsChart();
       renderAdminList();
     }
+    window.updateAdminDashboard = updateAdminDashboard;
 
     function renderRoleStatsChart() {
       const container = document.getElementById('role-chart-container');
       const roles = ['畢業系友', '教科在校生', '系上師長', '貴賓好友'];
-      const total = wishes.length || 1;
+      const total = (window.wishes || []).length || 1;
 
       container.innerHTML = roles.map(role => {
-        const count = wishes.filter(w => w.role === role || (role === '系上師長' && w.role === '退休師長')).length;
+        const count = (window.wishes || []).filter(w => w.role === role || (role === '系上師長' && w.role === '退休師長')).length;
         const pct = Math.round((count / total) * 100);
         return `
           <div>
@@ -1350,10 +1409,10 @@
 
     function renderAdminList() {
       const container = document.getElementById('admin-message-list');
-      let filtered = wishes;
+      let filtered = window.wishes || [];
 
       if (currentAdminStatusFilter !== 'ALL') {
-        filtered = wishes.filter(w => w.status === currentAdminStatusFilter);
+        filtered = filtered.filter(w => w.status === currentAdminStatusFilter);
       }
 
       if (filtered.length === 0) {
@@ -1371,34 +1430,33 @@
           <div class="p-4 rounded-2xl bg-slate-800 border border-slate-700/80 flex flex-col gap-2.5">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <span class="text-lg">${w.emoji}</span>
-                <span class="font-bold text-sm text-slate-100">${escapeHtml(w.author)}</span>
-                <span class="text-[10px] px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded">${escapeHtml(w.role)}</span>
+                <span class="text-lg">${w.emoji || '🎓'}</span>
+                <span class="font-bold text-sm text-slate-100">${escapeHtml(w.author || '')}</span>
+                <span class="text-[10px] px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded">${escapeHtml(w.role || '')}</span>
                 ${statusBadge}
                 ${w.isPinned ? '<span class="text-[10px] px-1.5 py-0.5 bg-amber-500/30 text-amber-300 rounded flex items-center gap-0.5"><i data-lucide="pin" class="w-2.5 h-2.5"></i> 置頂</span>' : ''}
               </div>
-              <span class="text-[11px] text-slate-500">${w.timestamp}</span>
+              <span class="text-[11px] text-slate-500">${w.timestamp || '剛剛'}</span>
             </div>
 
             <p class="text-xs text-slate-300 font-warm leading-relaxed bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/50">
-              ${escapeHtml(w.message)}
+              ${escapeHtml(w.message || '')}
             </p>
 
-            <!-- 操作按鈕列 -->
             <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-700/50">
               <div class="flex items-center gap-1.5">
-                ${w.status !== 'APPROVED' ? `<button onclick="setCardStatus(${w.id}, 'APPROVED')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 rounded-lg font-medium transition">展示</button>` : ''}
-                ${w.status !== 'REJECTED' ? `<button onclick="setCardStatus(${w.id}, 'REJECTED')" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 rounded-lg font-medium transition">隱藏</button>` : ''}
-                <button onclick="togglePinCard(${w.id})" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg font-medium transition">
+                ${w.status !== 'APPROVED' ? `<button onclick="setCardStatus('${w.id}', 'APPROVED')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 rounded-lg font-medium transition">展示</button>` : ''}
+                ${w.status !== 'REJECTED' ? `<button onclick="setCardStatus('${w.id}', 'REJECTED')" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 rounded-lg font-medium transition">隱藏</button>` : ''}
+                <button onclick="togglePinCard('${w.id}')" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg font-medium transition">
                   ${w.isPinned ? '取消置頂' : '設為置頂'}
                 </button>
               </div>
 
               <div class="flex items-center gap-2">
-                <button onclick="openEditModal(${w.id})" class="text-slate-400 hover:text-amber-400 p-1" title="編輯內容">
+                <button onclick="openEditModal('${w.id}')" class="text-slate-400 hover:text-amber-400 p-1" title="編輯內容">
                   <i data-lucide="edit-2" class="w-4 h-4"></i>
                 </button>
-                <button onclick="deleteCard(${w.id})" class="text-slate-400 hover:text-rose-400 p-1" title="永久刪除">
+                <button onclick="deleteCard('${w.id}')" class="text-slate-400 hover:text-rose-400 p-1" title="永久刪除">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
                 </button>
               </div>
@@ -1410,48 +1468,53 @@
       lucide.createIcons();
     }
 
-    function setCardStatus(id, status) {
-      const card = wishes.find(w => w.id === id);
-      if (card) {
-        card.status = status;
-        saveToLocalStorage(); // 同步至 LocalStorage
-        renderWishes();
-        updateAdminDashboard();
+    async function setCardStatus(id, status) {
+      if (!window.db) return;
+      try {
+        const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
+        await window.updateDoc(docRef, { status: status });
+      } catch (err) {
+        console.error("更新審核狀態失敗:", err);
       }
     }
 
-    function togglePinCard(id) {
-      const card = wishes.find(w => w.id === id);
-      if (card) {
-        card.isPinned = !card.isPinned;
-        saveToLocalStorage(); // 同步至 LocalStorage
-        renderWishes();
-        updateAdminDashboard();
+    async function togglePinCard(id) {
+      const card = (window.wishes || []).find(w => w.id === id);
+      if (card && window.db) {
+        try {
+          const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
+          await window.updateDoc(docRef, { isPinned: !card.isPinned });
+        } catch (err) {
+          console.error("切換置頂失敗:", err);
+        }
       }
     }
 
-    function batchApprovePending() {
-      wishes.forEach(w => {
-        if (w.status === 'PENDING') w.status = 'APPROVED';
-      });
-      saveToLocalStorage(); // 同步至 LocalStorage
-      renderWishes();
-      updateAdminDashboard();
+    async function batchApprovePending() {
+      if (!window.db) return;
+      const pendingList = (window.wishes || []).filter(w => w.status === 'PENDING');
+      for (const item of pendingList) {
+        const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', item.id);
+        await window.updateDoc(docRef, { status: 'APPROVED' });
+      }
     }
 
-    function deleteCard(id) {
-      wishes = wishes.filter(w => w.id !== id);
-      saveToLocalStorage(); // 同步至 LocalStorage
-      renderWishes();
-      updateAdminDashboard();
+    async function deleteCard(id) {
+      if (!window.db) return;
+      try {
+        const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
+        await window.deleteDoc(docRef);
+      } catch (err) {
+        console.error("刪除留言失敗:", err);
+      }
     }
 
     function openEditModal(id) {
-      const card = wishes.find(w => w.id === id);
+      const card = (window.wishes || []).find(w => w.id === id);
       if (!card) return;
       document.getElementById('edit-id').value = card.id;
-      document.getElementById('edit-author').value = card.author;
-      document.getElementById('edit-message').value = card.message;
+      document.getElementById('edit-author').value = card.author || '';
+      document.getElementById('edit-message').value = card.message || '';
       document.getElementById('edit-modal').classList.remove('hidden');
     }
 
@@ -1459,25 +1522,38 @@
       document.getElementById('edit-modal').classList.add('hidden');
     }
 
-    function saveEditCard() {
-      const id = parseInt(document.getElementById('edit-id').value);
-      const card = wishes.find(w => w.id === id);
-      if (card) {
-        card.author = document.getElementById('edit-author').value.trim();
-        card.message = document.getElementById('edit-message').value.trim();
-        saveToLocalStorage(); // 同步至 LocalStorage
-        renderWishes();
-        updateAdminDashboard();
+    async function saveEditCard() {
+      const id = document.getElementById('edit-id').value;
+      const author = document.getElementById('edit-author').value.trim();
+      const message = document.getElementById('edit-message').value.trim();
+
+      if (id && window.db) {
+        try {
+          const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
+          await window.updateDoc(docRef, { author: author, message: message });
+        } catch (err) {
+          console.error("儲存修改內容失敗:", err);
+        }
       }
       closeEditModal();
     }
 
-    function toggleAutoModerateSetting(checked) {
-      isAutoModerateEnabled = checked;
-      saveToLocalStorage();
+    async function toggleAutoModerateSetting(checked) {
+      window.isAutoModerateEnabled = checked;
+      if (window.db) {
+        try {
+          const configDocRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'settings', 'config');
+          await window.setDoc(configDocRef, {
+            autoModerate: checked,
+            sensitiveWords: document.getElementById('setting-sensitive-words')?.value || '廣告, 詐騙, 買粉'
+          }, { merge: true });
+        } catch (err) {
+          console.error("同步審核設定失敗:", err);
+        }
+      }
     }
 
-    // Modal Operations
+    // Modals
     function openSenderModal() {
       document.getElementById('sender-modal').classList.remove('hidden');
     }
@@ -1493,7 +1569,7 @@
     }
 
     function openMagnifyModal(id) {
-      const item = wishes.find(w => w.id === id);
+      const item = (window.wishes || []).find(w => w.id === id);
       if (!item) return;
 
       const modal = document.getElementById('magnify-modal');
@@ -1502,15 +1578,15 @@
 
       box.className = `relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
 
-      document.getElementById('mag-avatar').innerText = item.emoji;
-      document.getElementById('mag-name').innerText = item.author;
+      document.getElementById('mag-avatar').innerText = item.emoji || '🎓';
+      document.getElementById('mag-name').innerText = item.author || '';
       
       const roleBadge = document.getElementById('mag-role');
       roleBadge.innerText = item.role || '系友';
       roleBadge.className = `text-xs px-2.5 py-0.5 rounded-md font-bold ${theme.badgeBg} ${theme.badgeText}`;
 
-      document.getElementById('mag-time').innerText = item.timestamp;
-      document.getElementById('mag-text').innerText = item.message;
+      document.getElementById('mag-time').innerText = item.timestamp || '剛剛';
+      document.getElementById('mag-text').innerText = item.message || '';
 
       const likeBtn = document.getElementById('mag-like-btn');
       document.getElementById('mag-like-count').innerText = `送上祝福 (${item.likes || 0})`;
@@ -1537,7 +1613,7 @@
       }
     }
 
-    // 舞台自動滾動 / 輪播
+    // 輪播
     function toggleAutoScroll() {
       isAutoScrolling = !isAutoScrolling;
       const btnIcon = document.getElementById('autoscroll-icon');
@@ -1572,9 +1648,9 @@
       }, 55);
     }
 
-    // 匯出祝福內容為文字檔留存
+    // 匯出功能
     function exportWishes() {
-      const dataStr = wishes.map((w, idx) => `[${idx + 1}] ${w.author} (${w.role}) - 狀態: ${w.status} - 時間: ${w.timestamp}\n${w.message}\n`).join('\n---\n\n');
+      const dataStr = (window.wishes || []).map((w, idx) => `[${idx + 1}] ${w.author} (${w.role}) - 狀態: ${w.status} - 時間: ${w.timestamp}\n${w.message}\n`).join('\n---\n\n');
       const blob = new Blob([`淡江大學教育科技系 30 周年慶・數位祝福名冊\n匯出時間：${new Date().toLocaleString()}\n\n${dataStr}`], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1601,7 +1677,6 @@
         height = canvas.height = window.innerHeight;
       });
 
-      // 溫暖金色與慶祝微光粒子
       const particles = Array.from({ length: 35 }, () => ({
         x: Math.random() * width,
         y: Math.random() * height,

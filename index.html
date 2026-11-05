@@ -2,9 +2,8 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <!-- 修正手機版縮放問題，禁止雙擊放大 -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>淡江大學教育科技系 30 周年慶・數位祝福留言牆與管理中心</title>
+  <title>淡江大學教育科技系 30 周年慶・數位祝福留言牆</title>
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -28,26 +27,6 @@
             warm: ['"Zen Maru Gothic"', 'sans-serif'],
             serifTc: ['"Noto Serif TC"', 'serif'],
             cinzel: ['"Cinzel"', 'serif'],
-          },
-          colors: {
-            tkGold: '#D4AF37',
-            tkNavy: '#1E293B',
-            tkMaroon: '#800000',
-            warmCream: '#FAF7F0',
-          },
-          keyframes: {
-            floatBadge: {
-              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
-              '50%': { transform: 'translateY(-6px) rotate(1deg)' }
-            },
-            popNote: {
-              '0%': { transform: 'scale(0.85) translateY(24px)', opacity: '0' },
-              '100%': { transform: 'scale(1) translateY(0)', opacity: '1' }
-            }
-          },
-          animation: {
-            floatBadge: 'floatBadge 4.5s ease-in-out infinite',
-            popNote: 'popNote 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards'
           }
         }
       }
@@ -59,7 +38,6 @@
       font-family: 'Zen Maru Gothic', sans-serif;
       background: radial-gradient(circle at 15% 15%, #FFFDF8 0%, #FBF6EC 45%, #F4ECE1 100%);
       overflow-x: hidden;
-      /* 防止手機版下拉更新造成干擾 */
       overscroll-behavior-y: none; 
     }
     
@@ -77,15 +55,11 @@
       border-left: 3px dashed rgba(180, 150, 120, 0.4); border-right: 3px dashed rgba(180, 150, 120, 0.4);
       border-radius: 2px; z-index: 10;
     }
-    .washi-tape-gold {
-      background: rgba(254, 240, 138, 0.85); border-left: 3px dashed rgba(180, 130, 40, 0.5); border-right: 3px dashed rgba(180, 130, 40, 0.5);
-    }
 
     #ambient-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
     
     /* 強制輸入框字體大於16px以防止iOS自動縮放 */
     input, textarea, select { font-size: 16px !important; }
-
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.03); }
     ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.4); border-radius: 99px; }
@@ -99,38 +73,35 @@
   <!-- 頂部頁眉 -->
   <header class="relative z-20 px-4 py-3 md:py-4 border-b border-amber-900/10 bg-white/90 backdrop-blur-md shadow-sm sticky top-0">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-      
-      <!-- 主題標題 -->
       <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
         <div class="flex items-center gap-3">
-          <div class="relative animate-floatBadge flex-shrink-0" onclick="setupBadgeSecretClick()">
+          <div class="relative flex-shrink-0">
             <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex flex-col items-center justify-center text-white shadow-lg border-2 border-amber-200">
-              <span class="font-cinzel text-[10px] md:text-xs font-semibold leading-none tracking-widest text-amber-200">TKU</span>
-              <span class="font-cinzel text-xl md:text-2xl font-black leading-tight text-white drop-shadow">30</span>
+              <span class="font-cinzel text-[10px] md:text-xs font-semibold leading-none text-amber-200">TKU</span>
+              <span class="font-cinzel text-xl md:text-2xl font-black text-white drop-shadow">30</span>
             </div>
             <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-rose-500 border border-white text-[10px] text-white flex items-center justify-center font-bold">🎓</div>
           </div>
-
           <div>
             <div class="flex items-center gap-2 flex-wrap">
               <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-200/80">淡江教科系</span>
               <span class="inline-flex items-center gap-1 text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
                 <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                LIVE 同步中
+                雲端即時連線中
               </span>
             </div>
-            <h1 class="text-lg md:text-2xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">30 周年慶祝福牆</h1>
+            <h1 class="text-lg md:text-2xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">30 周年祝福牆</h1>
           </div>
         </div>
 
-        <!-- 手機版專屬統計精簡顯示 -->
+        <!-- 手機版精簡統計 -->
         <div class="lg:hidden px-2 py-1 bg-amber-50/80 border border-amber-200/80 rounded-lg flex items-center gap-1 text-amber-900">
           <i data-lucide="sparkles" class="w-3 h-3 text-amber-600"></i>
           <span id="wish-counter-mobile" class="text-sm font-black font-mono">0</span>
         </div>
       </div>
 
-      <!-- 頂部操作按鈕 (電腦版) -->
+      <!-- 電腦版操作按鈕 -->
       <div class="hidden lg:flex items-center gap-2.5">
         <div class="px-3.5 py-2 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-center gap-2 text-stone-700 shadow-xs">
           <i data-lucide="sparkles" class="w-4 h-4 text-amber-600"></i>
@@ -138,36 +109,27 @@
           <span id="wish-counter" class="text-base font-black text-amber-900 font-mono">0</span>
           <span class="text-xs font-medium">篇</span>
         </div>
-
-        <button id="toggle-autoscroll" onclick="toggleAutoScroll()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 hover:border-amber-400 hover:bg-amber-50 text-stone-700 transition flex items-center gap-1.5">
+        <button onclick="toggleAutoScroll()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 hover:bg-amber-50 text-stone-700 transition flex items-center gap-1.5">
           <i data-lucide="play" id="autoscroll-icon" class="w-3.5 h-3.5 text-amber-600"></i>
           <span id="autoscroll-label">舞台輪播</span>
         </button>
-
-        <button onclick="openSenderModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md transition flex items-center gap-1.5">
-          <i data-lucide="edit-3" class="w-4 h-4"></i>
-          <span>送上祝福</span>
+        <button onclick="openSenderModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-md transition flex items-center gap-1.5">
+          <i data-lucide="edit-3" class="w-4 h-4"></i><span>送上祝福</span>
         </button>
-
-        <button id="admin-unlock-btn" onclick="promptAdminPassword()" class="px-3 py-2 rounded-xl text-xs font-bold bg-stone-100 hover:bg-amber-100 text-stone-600 transition flex items-center gap-1">
-          <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-600"></i>
-        </button>
-
-        <button id="admin-portal-btn" onclick="toggleAdminDrawer()" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-amber-300 shadow-md transition flex items-center gap-1.5">
-          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>管理中心
+        <button onclick="toggleFullScreen()" class="p-2 rounded-xl text-stone-600 bg-white border border-stone-200 hover:bg-amber-50 transition">
+          <i data-lucide="maximize" class="w-4 h-4"></i>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- 搜尋與身分篩選欄 (支援手機橫向滑動) -->
+  <!-- 篩選列 -->
   <section class="relative z-10 max-w-7xl mx-auto w-full px-4 pt-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
     <div class="flex items-center gap-2 overflow-x-auto w-full hide-scrollbar pb-1" id="role-filter-group">
-      <button onclick="setRoleFilter('ALL')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 text-xs" data-role="ALL">全部留言</button>
+      <button onclick="setRoleFilter('ALL')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold text-xs" data-role="ALL">全部留言</button>
       <button onclick="setRoleFilter('畢業系友')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs" data-role="畢業系友">🎓 畢業系友</button>
       <button onclick="setRoleFilter('教科在校生')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs" data-role="教科在校生">🎒 在校學生</button>
       <button onclick="setRoleFilter('系上師長')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs" data-role="系上師長">📚 師長教職</button>
-      <button onclick="setRoleFilter('貴賓好友')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs" data-role="貴賓好友">🤝 貴賓好友</button>
     </div>
     
     <div class="relative w-full lg:max-w-xs shrink-0">
@@ -192,7 +154,7 @@
       </div>
     </section>
 
-    <!-- 投影端右側 QR Code 掃描區 (手機版自動隱藏，因為手機本身就能直接留言) -->
+    <!-- 投影端右側 QR Code 掃描區 (電腦大螢幕專用) -->
     <aside class="hidden lg:flex w-80 flex-shrink-0 flex-col gap-4">
       <div class="sticky top-24 bg-white/85 backdrop-blur-md rounded-3xl p-6 border border-amber-900/10 shadow-xl text-center flex flex-col items-center">
         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100/70 text-amber-800 border border-amber-200 mb-3">
@@ -202,23 +164,13 @@
         <p class="text-xs text-stone-500 mt-1 mb-4 leading-relaxed">相機對準條碼即可留言</p>
 
         <!-- QR Code -->
-        <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative" onclick="openQrModal()">
+        <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative">
           <div id="qrcode-display" class="flex justify-center items-center"></div>
-          <div class="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 rounded-2xl flex items-center justify-center text-white text-xs font-semibold transition backdrop-blur-xs">
-            點擊放大
-          </div>
         </div>
 
-        <!-- 現場模擬模組 -->
-        <div class="w-full mt-5 pt-4 border-t border-stone-100 flex flex-col gap-2.5">
-          <div class="flex items-center justify-between text-xs text-stone-600 font-bold">
-            <span class="flex items-center gap-1"><i data-lucide="play-circle" class="w-3.5 h-3.5 text-amber-600"></i> 現場模擬留言</span>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="triggerManualSim()" class="flex-1 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-xs font-medium transition shadow-xs">新增 1 則</button>
-            <button onclick="clearAllData()" class="flex-1 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg text-xs font-medium transition shadow-xs">清空資料</button>
-          </div>
-        </div>
+        <p class="text-[11px] text-stone-400 mt-3 flex items-center gap-1">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i> 免下載 App・同步大螢幕
+        </p>
       </div>
     </aside>
   </main>
@@ -230,7 +182,7 @@
 
   <!-- 留言互動視窗 Modal -->
   <div id="sender-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm hidden flex items-end md:items-center justify-center p-0 md:p-4 transition-opacity">
-    <div class="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-popNote">
+    <div class="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
       <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-4 md:hidden"></div>
       
       <div class="flex items-center justify-between pb-3 border-b border-stone-100">
@@ -238,9 +190,7 @@
           <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
             <i data-lucide="graduation-cap" class="w-5 h-5"></i>
           </div>
-          <div>
-            <h3 class="font-bold text-stone-800 text-base font-serifTc">送上教科 30 周年祝福</h3>
-          </div>
+          <div><h3 class="font-bold text-stone-800 text-base font-serifTc">送上教科 30 周年祝福</h3></div>
         </div>
         <button onclick="closeSenderModal()" class="text-stone-400 hover:text-stone-600 p-2 bg-stone-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
@@ -279,108 +229,93 @@
           </div>
           <textarea id="input-message" required maxlength="150" rows="3" placeholder="想對教科系說的話..." class="w-full text-base p-3 rounded-xl border border-stone-200 bg-stone-50 font-warm" oninput="updateCharCount()"></textarea>
         </div>
+        
+        <!-- 快速帶入按鈕 -->
+        <div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" onclick="applyPreset('祝淡江教科系30週年快樂！感恩師長的啟蒙，願教科繼續璀璨耀眼！✨')" class="text-xs px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/60">🎂 祝教科30生日快樂</button>
+            <button type="button" onclick="applyPreset('回想起在電腦教室熬夜做專題的日子，教科永遠是最溫暖的家！❤️')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 text-stone-700">💡 電腦教室回憶</button>
+          </div>
+        </div>
 
         <button type="submit" class="w-full py-3.5 bg-amber-600 text-white font-bold rounded-xl shadow-lg mt-2 flex items-center justify-center gap-2 active:bg-amber-700">
-          <i data-lucide="send" class="w-5 h-5"></i> 送出祝福
+          <i data-lucide="send" class="w-5 h-5"></i> 送出祝福上大螢幕
         </button>
       </form>
     </div>
   </div>
 
-  <!-- 卡片放大檢視彈窗 -->
-  <div id="magnify-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="relative w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl transition-all transform animate-popNote" id="magnify-card-content">
-      <div class="washi-tape"></div>
-      <button onclick="closeMagnifyModal()" class="absolute top-3 right-3 text-stone-400 bg-white/50 p-2 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
+  <!-- ========================================== -->
+  <!-- 跨裝置雲端資料庫 Firebase Firestore 核心邏輯 -->
+  <!-- ========================================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-      <div class="flex items-center gap-3.5 mb-4 mt-2">
-        <span id="mag-avatar" class="w-12 h-12 rounded-2xl text-2xl flex items-center justify-center bg-white/80 shadow-xs border border-black/5"></span>
-        <div>
-          <h4 id="mag-name" class="text-lg md:text-xl font-bold text-stone-800 font-serifTc"></h4>
-          <span id="mag-role" class="text-xs px-2 py-0.5 rounded-md font-bold mt-1 inline-block"></span>
-        </div>
-      </div>
+    // ✅ 這裡已經為你替換成專屬的金鑰設定！
+    const firebaseConfig = {
+      apiKey: "AIzaSyB6ZPBvqBrG9gmvADzAEqNSH1t1Ch710dc",
+      authDomain: "tkuet30-ce24b.firebaseapp.com",
+      databaseURL: "https://tkuet30-ce24b-default-rtdb.firebaseio.com",
+      projectId: "tkuet30-ce24b",
+      storageBucket: "tkuet30-ce24b.firebasestorage.app",
+      messagingSenderId: "98337651911",
+      appId: "1:98337651911:web:8055b43d158d27c2d552e2",
+      measurementId: "G-G5SR1B0ZGD"
+    };
 
-      <div class="p-4 bg-white/60 rounded-2xl border border-black/5 mb-4">
-        <p id="mag-text" class="text-stone-800 text-base md:text-lg leading-relaxed font-warm whitespace-pre-wrap"></p>
-      </div>
+    // 初始化 Firebase (免登入直接讀寫模式)
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    window.db = db;
+    window.wishesCollectionRef = collection(db, "tku30_wishes");
+    window.updateDoc = updateDoc;
+    window.doc = doc;
+    window.addDoc = addDoc;
 
-      <div class="flex justify-end gap-2">
-        <button id="mag-like-btn" class="px-4 py-2 rounded-xl bg-white/90 text-rose-600 font-bold text-sm shadow-xs border border-rose-100 flex items-center gap-1.5 active:scale-95">
-          <i data-lucide="heart" class="w-4 h-4 fill-rose-500 text-rose-500"></i>
-          <span id="mag-like-count">送上愛心</span>
-        </button>
-      </div>
-    </div>
-  </div>
+    // 即時監聽資料庫變化 (跨裝置同步的核心！)
+    onSnapshot(window.wishesCollectionRef, (snapshot) => {
+      const cloudWishes = [];
+      snapshot.forEach((doc) => {
+        cloudWishes.push({ id: doc.id, ...doc.data() });
+      });
 
-  <!-- QR Code 巨幅投影展示彈窗 -->
-  <div id="qr-modal" class="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-md hidden flex items-center justify-center p-6">
-    <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center relative shadow-2xl animate-popNote">
-      <button onclick="closeQrModal()" class="absolute top-4 right-4 text-stone-400 p-2 bg-stone-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
-      <h3 class="text-xl font-bold font-serifTc text-stone-800 mt-2">掃碼送祝福</h3>
-      <p class="text-stone-500 text-xs mt-1 mb-5">免下載App，手機直接留言上牆</p>
-      <div class="p-4 bg-amber-50 rounded-2xl inline-block">
-        <div id="qrcode-large" class="mx-auto flex justify-center"></div>
-      </div>
-    </div>
-  </div>
+      // 依照發布時間由新到舊排序
+      cloudWishes.sort((a, b) => b.createdAt - a.createdAt);
+      
+      // 更新全局變數並重新渲染畫面
+      window.wishes = cloudWishes;
+      if (window.renderWishes) window.renderWishes();
+    }, (error) => {
+      console.error("無法連線到資料庫，請檢查您的 Firebase Firestore 權限是否設為 Test Mode (allow read, write: if true;)", error);
+    });
+  </script>
 
-  <!-- Javascript 邏輯 (完全本地端 LocalStorage 運作，無需後端) -->
+  <!-- ========================================== -->
+  <!-- UI 介面與互動操作邏輯 -->
+  <!-- ========================================== -->
   <script>
-    // 卡片主題色調
     const CARD_THEMES = [
-      { id: 'yellow', name: '暖杏黃', bg: 'bg-[#FEF7D8]', border: 'border-[#EEDFA3]', text: 'text-amber-950', badgeBg: 'bg-amber-200/70', badgeText: 'text-amber-900' },
-      { id: 'pink', name: '淡櫻粉', bg: 'bg-[#FCE7E9]', border: 'border-[#EFC4C9]', text: 'text-rose-950', badgeBg: 'bg-rose-200/70', badgeText: 'text-rose-900' },
-      { id: 'green', name: '薄荷綠', bg: 'bg-[#E7F5EC]', border: 'border-[#C8E8D2]', text: 'text-emerald-950', badgeBg: 'bg-emerald-200/70', badgeText: 'text-emerald-900' },
-      { id: 'blue', name: '晨曦藍', bg: 'bg-[#E3F2FD]', border: 'border-[#BEDCF5]', text: 'text-sky-950', badgeBg: 'bg-sky-200/70', badgeText: 'text-sky-900' },
-      { id: 'purple', name: '薰衣紫', bg: 'bg-[#EFEAFF]', border: 'border-[#D9CDF7]', text: 'text-purple-950', badgeBg: 'bg-purple-200/70', badgeText: 'text-purple-900' }
+      { id: 'yellow', bg: 'bg-[#FEF7D8]', border: 'border-[#EEDFA3]', text: 'text-amber-950', badgeBg: 'bg-amber-200/70', badgeText: 'text-amber-900' },
+      { id: 'pink', bg: 'bg-[#FCE7E9]', border: 'border-[#EFC4C9]', text: 'text-rose-950', badgeBg: 'bg-rose-200/70', badgeText: 'text-rose-900' },
+      { id: 'green', bg: 'bg-[#E7F5EC]', border: 'border-[#C8E8D2]', text: 'text-emerald-950', badgeBg: 'bg-emerald-200/70', badgeText: 'text-emerald-900' },
+      { id: 'blue', bg: 'bg-[#E3F2FD]', border: 'border-[#BEDCF5]', text: 'text-sky-950', badgeBg: 'bg-sky-200/70', badgeText: 'text-sky-900' }
     ];
     const EMOJIS = ['🎓', '🎂', '✨', '❤️', '🚀', '🌱', '🎉', '💡'];
     
-    let wishes = [];
+    window.wishes = [];
     let selectedEmoji = '🎓';
     let selectedThemeId = 'yellow';
     let currentRoleFilter = 'ALL';
     let currentSearchKeyword = '';
     let autoScrollInterval = null;
+    let isAutoScrolling = false;
 
-    // --- 本地資料庫 LocalStorage 核心邏輯 ---
-    function loadData() {
-      const data = localStorage.getItem('tku30_wishes');
-      if (data) {
-        wishes = JSON.parse(data);
-      } else {
-        // 如果沒資料，給兩筆預設資料
-        wishes = [
-          { id: '1', author: '第5屆系友 家銘', role: '畢業系友', message: '坐在工學大樓電腦教室的時光歷歷在目。祝教科系 30 週年生日快樂！', emoji: '🎂', themeId: 'yellow', timestamp: '剛剛', rotation: -1.2, likes: 12, status: 'APPROVED', isPinned: true },
-          { id: '2', author: '大四專題生 庭萱', role: '教科在校生', message: '在教科系四年的學習充滿挑戰與驚喜，祝教科系 30 歲生日快樂，畢業順利！🎓✨', emoji: '🎓', themeId: 'pink', timestamp: '10分鐘前', rotation: 0.8, likes: 5, status: 'APPROVED', isPinned: false }
-        ];
-        saveData();
-      }
-      renderWishes();
-    }
-
-    function saveData() {
-      localStorage.setItem('tku30_wishes', JSON.stringify(wishes));
-      renderWishes();
-    }
-
-    // 監聽其他分頁的變更，達成跨分頁即時同步
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'tku30_wishes') {
-        wishes = JSON.parse(e.newValue || '[]');
-        renderWishes();
-      }
-    });
-
-    // --- 畫面渲染與操作 ---
     function init() {
       setupColorSelector();
       setupEmojiSelector();
       initQRCodes();
       initParticles();
-      loadData();
       lucide.createIcons();
     }
 
@@ -388,18 +323,15 @@
       const container = document.getElementById('wishes-container');
       const emptyState = document.getElementById('empty-state');
       
-      let visible = wishes.filter(w => w.status === 'APPROVED');
+      let visible = window.wishes;
       if (currentRoleFilter !== 'ALL') visible = visible.filter(w => w.role === currentRoleFilter);
       if (currentSearchKeyword) {
         const kw = currentSearchKeyword.toLowerCase();
         visible = visible.filter(w => w.author.toLowerCase().includes(kw) || w.message.toLowerCase().includes(kw));
       }
       
-      // 置頂排在前面，然後按 ID 反向排(最新在前)
-      visible.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0) || b.id - a.id);
-      
-      document.getElementById('wish-counter').innerText = wishes.length;
-      document.getElementById('wish-counter-mobile').innerText = wishes.length;
+      document.getElementById('wish-counter').innerText = window.wishes.length;
+      document.getElementById('wish-counter-mobile').innerText = window.wishes.length;
 
       if (visible.length === 0) {
         container.innerHTML = '';
@@ -411,26 +343,22 @@
       container.innerHTML = visible.map((item) => {
         const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
         return `
-          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-4 md:p-5 shadow-sm relative cursor-pointer group flex flex-col justify-between ${item.isPinned ? 'pinned-card' : ''}"
-               style="transform: rotate(${item.rotation || 0}deg);" onclick="openMagnifyModal('${item.id}')">
-            <div class="washi-tape ${item.isPinned ? 'washi-tape-gold' : ''}"></div>
+          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-4 md:p-5 shadow-sm relative cursor-pointer"
+               style="transform: rotate(${item.rotation || 0}deg);">
+            <div class="washi-tape"></div>
             <div>
               <div class="flex items-center justify-between gap-2 mb-3 pt-1">
                 <div class="flex items-center gap-2">
                   <span class="w-9 h-9 rounded-xl bg-white/90 flex items-center justify-center text-xl shadow-xs">${item.emoji || '🎓'}</span>
                   <div>
-                    <div class="flex items-center gap-1">
-                      <h3 class="font-bold text-sm ${theme.text}">${escapeHtml(item.author)}</h3>
-                      ${item.isPinned ? '<i data-lucide="pin" class="w-3.5 h-3.5 text-amber-600 fill-amber-500"></i>' : ''}
-                    </div>
+                    <h3 class="font-bold text-sm ${theme.text}">${escapeHtml(item.author)}</h3>
                     <span class="text-[10px] font-bold px-2 py-0.5 rounded ${theme.badgeBg} ${theme.badgeText}">${escapeHtml(item.role)}</span>
                   </div>
                 </div>
               </div>
               <p class="text-stone-800 text-sm leading-relaxed font-warm whitespace-pre-line mb-3">${escapeHtml(item.message)}</p>
             </div>
-            <div class="flex items-center justify-between text-xs pt-2.5 border-t border-black/5 text-stone-500">
-              <span class="text-[11px] text-stone-400 group-hover:text-amber-800 transition">點擊放大檢視</span>
+            <div class="flex justify-end text-xs pt-2.5 border-t border-black/5">
               <button onclick="likeCard(event, '${item.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
                 <i data-lucide="heart" class="w-4 h-4 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
                 <span class="text-xs font-bold text-rose-500">${item.likes || 0}</span>
@@ -446,7 +374,7 @@
       currentRoleFilter = role;
       document.querySelectorAll('#role-filter-group .role-btn').forEach(btn => {
         btn.className = btn.getAttribute('data-role') === role 
-          ? 'role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 text-xs' 
+          ? 'role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold text-xs' 
           : 'role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs';
       });
       renderWishes();
@@ -454,7 +382,8 @@
     
     function handleSearch(val) { currentSearchKeyword = val.trim(); renderWishes(); }
 
-    function handleFormSubmit(e) {
+    // 【重要】將資料真實上傳到 Firebase 資料庫
+    async function handleFormSubmit(e) {
       e.preventDefault();
       const author = document.getElementById('input-author').value.trim();
       const role = document.getElementById('input-role').value;
@@ -462,46 +391,46 @@
       if (!author || !message) return;
 
       const newWish = {
-        id: Date.now().toString(), author, role, message,
-        emoji: selectedEmoji, themeId: selectedThemeId,
-        timestamp: '剛剛', rotation: parseFloat((Math.random() * 3.6 - 1.8).toFixed(1)),
-        likes: 0, status: 'APPROVED', isPinned: false
+        author, role, message,
+        emoji: selectedEmoji, 
+        themeId: selectedThemeId,
+        rotation: parseFloat((Math.random() * 3.6 - 1.8).toFixed(1)),
+        likes: 0,
+        createdAt: Date.now()
       };
 
-      wishes.unshift(newWish); // 加入最前面
-      saveData();
-      
-      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
-      closeSenderModal();
-      document.getElementById('wish-form').reset();
-      updateCharCount();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function likeCard(e, id) {
-      e.stopPropagation();
-      const card = wishes.find(w => w.id === id);
-      if (card) {
-        card.likes = (card.likes || 0) + 1;
-        saveData();
-        confetti({ particleCount: 20, spread: 40, origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight } });
+      try {
+        if (!window.addDoc || !window.wishesCollectionRef) {
+          alert("資料庫尚未連接，請重新整理網頁後再試一次。");
+          return;
+        }
+        
+        // 寫入雲端資料庫
+        await window.addDoc(window.wishesCollectionRef, newWish);
+        
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+        closeSenderModal();
+        document.getElementById('wish-form').reset();
+        updateCharCount();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        alert("上傳失敗，請確認您的 Firebase 資料庫安全規則已設定為 Test Mode (允許讀寫)。");
       }
     }
 
-    function triggerManualSim() {
-      const newWish = {
-        id: Date.now().toString(), author: '展示機', role: '畢業系友', message: '這是一條手動觸發的測試留言！🎉',
-        emoji: '💡', themeId: 'blue', timestamp: '剛剛', rotation: parseFloat((Math.random() * 3.6 - 1.8).toFixed(1)),
-        likes: Math.floor(Math.random() * 5), status: 'APPROVED', isPinned: false
-      };
-      wishes.unshift(newWish);
-      saveData();
-    }
-
-    function clearAllData() {
-      if(confirm('確定要清空所有留言測試資料嗎？')) {
-        wishes = [];
-        saveData();
+    // 【重要】更新雲端資料庫的愛心數量
+    async function likeCard(e, id) {
+      e.stopPropagation();
+      const card = window.wishes.find(w => w.id === id);
+      if (card && window.db) {
+        try {
+          const docRef = window.doc(window.db, "tku30_wishes", id);
+          await window.updateDoc(docRef, { likes: (card.likes || 0) + 1 });
+          confetti({ particleCount: 20, spread: 40, origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight } });
+        } catch(err) {
+          console.error("按讚同步失敗", err);
+        }
       }
     }
 
@@ -524,27 +453,25 @@
     function openQrModal() { document.getElementById('qr-modal').classList.remove('hidden'); }
     function closeQrModal() { document.getElementById('qr-modal').classList.add('hidden'); }
 
-    function openMagnifyModal(id) {
-      const item = wishes.find(w => w.id === id); if(!item) return;
-      const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
-      document.getElementById('magnify-card-content').className = `relative w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
-      document.getElementById('mag-avatar').innerText = item.emoji || '🎓';
-      document.getElementById('mag-name').innerText = item.author;
-      document.getElementById('mag-role').innerText = item.role;
-      document.getElementById('mag-role').className = `text-xs px-2.5 py-1 rounded-md font-bold mt-1 inline-block ${theme.badgeBg} ${theme.badgeText}`;
-      document.getElementById('mag-text').innerText = item.message;
-      document.getElementById('mag-like-count').innerText = `送上愛心 (${item.likes || 0})`;
-      document.getElementById('mag-like-btn').onclick = (e) => { likeCard(e, item.id); document.getElementById('mag-like-count').innerText = `送上愛心 (${item.likes+1})`; };
-      document.getElementById('magnify-modal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-    function closeMagnifyModal() { document.getElementById('magnify-modal').classList.add('hidden'); }
-
     function initQRCodes() {
       const url = window.location.href;
       if(document.getElementById('qrcode-display')) new QRCode(document.getElementById('qrcode-display'), { text: url, width: 120, height: 120, colorDark: '#451A03', colorLight: '#ffffff' });
       if(document.getElementById('qrcode-large')) new QRCode(document.getElementById('qrcode-large'), { text: url, width: 220, height: 220, colorDark: '#451A03', colorLight: '#ffffff' });
     }
+
+    function toggleAutoScroll() {
+      isAutoScrolling = !isAutoScrolling;
+      if (isAutoScrolling) {
+        document.getElementById('autoscroll-icon').setAttribute('data-lucide', 'pause'); document.getElementById('autoscroll-label').innerText = '暫停輪播';
+        clearInterval(autoScrollInterval); let dir = 1;
+        autoScrollInterval = setInterval(() => { window.scrollBy({top: 1.5 * dir, behavior:'smooth'}); if((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 8) dir = -1; else if(window.scrollY <= 0) dir = 1; }, 55);
+      } else {
+        document.getElementById('autoscroll-icon').setAttribute('data-lucide', 'play'); document.getElementById('autoscroll-label').innerText = '舞台輪播';
+        clearInterval(autoScrollInterval);
+      }
+      lucide.createIcons();
+    }
+    function toggleFullScreen() { (!document.fullscreenElement) ? document.documentElement.requestFullscreen().catch(()=>{}) : (document.exitFullscreen && document.exitFullscreen()); }
 
     function initParticles() {
       const canvas = document.getElementById('ambient-canvas'); const ctx = canvas.getContext('2d');
@@ -553,9 +480,7 @@
       const pts = Array.from({ length: 30 }, () => ({ x: Math.random()*w, y: Math.random()*h, r: Math.random()*2+1, dx: (Math.random()-0.5)*0.3, dy: (Math.random()-0.5)*0.3, a: Math.random()*0.3+0.1, c: '#D4AF37' }));
       (function loop() { ctx.clearRect(0,0,w,h); pts.forEach(p => { p.x += p.dx; p.y += p.dy; if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=p.c; ctx.globalAlpha=p.a; ctx.fill(); }); ctx.globalAlpha=1; requestAnimationFrame(loop); })();
     }
-
     function escapeHtml(string) { const div = document.createElement('div'); div.innerText = string; return div.innerHTML; }
-
     window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>

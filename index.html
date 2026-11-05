@@ -2,15 +2,8 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>淡江大學教育科技系 30 周年慶・數位祝福留言牆與管理中心</title>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script><!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- 修正手機版縮放問題，禁止雙擊放大 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>淡江大學教育科技系 30 周年慶・數位祝福留言牆與管理中心</title>
 
   <!-- Tailwind CSS -->
@@ -22,7 +15,7 @@
   <!-- Canvas Confetti -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
 
-  <!-- Google Fonts: Noto Serif TC, Zen Maru Gothic -->
+  <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
@@ -66,120 +59,79 @@
       font-family: 'Zen Maru Gothic', sans-serif;
       background: radial-gradient(circle at 15% 15%, #FFFDF8 0%, #FBF6EC 45%, #F4ECE1 100%);
       overflow-x: hidden;
+      /* 防止手機版下拉更新造成干擾 */
+      overscroll-behavior-y: none; 
     }
     
-    /* 便利貼 / 拍立得紙感卡片 */
-    .wishing-card {
-      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      position: relative;
-    }
-    .wishing-card:hover {
-      transform: translateY(-6px) scale(1.02) !important;
-      box-shadow: 0 20px 30px -10px rgba(138, 100, 60, 0.2);
-      z-index: 25;
-    }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-    /* 置頂卡片加亮效果 */
-    .pinned-card {
-      box-shadow: 0 0 0 3px #D4AF37, 0 12px 24px -6px rgba(212, 175, 55, 0.35);
-    }
+    .wishing-card { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative; }
+    .wishing-card:hover { transform: translateY(-6px) scale(1.02) !important; box-shadow: 0 20px 30px -10px rgba(138, 100, 60, 0.2); z-index: 25; }
+    .pinned-card { box-shadow: 0 0 0 3px #D4AF37, 0 12px 24px -6px rgba(212, 175, 55, 0.35); }
 
-    /* 紙膠帶裝飾 */
     .washi-tape {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 75px;
-      height: 22px;
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(3px);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      border-left: 3px dashed rgba(180, 150, 120, 0.4);
-      border-right: 3px dashed rgba(180, 150, 120, 0.4);
-      border-radius: 2px;
-      z-index: 10;
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      width: 75px; height: 22px; background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(3px); box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      border-left: 3px dashed rgba(180, 150, 120, 0.4); border-right: 3px dashed rgba(180, 150, 120, 0.4);
+      border-radius: 2px; z-index: 10;
     }
-
-    /* 金色置頂膠帶 */
     .washi-tape-gold {
-      background: rgba(254, 240, 138, 0.85);
-      border-left: 3px dashed rgba(180, 130, 40, 0.5);
-      border-right: 3px dashed rgba(180, 130, 40, 0.5);
+      background: rgba(254, 240, 138, 0.85); border-left: 3px dashed rgba(180, 130, 40, 0.5); border-right: 3px dashed rgba(180, 130, 40, 0.5);
     }
 
-    #ambient-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 0;
-    }
+    #ambient-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
+    
+    /* 強制輸入框字體大於16px以防止iOS自動縮放 */
+    input, textarea, select { font-size: 16px !important; }
 
-    /* 滾動條美化 */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.03);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(212, 175, 55, 0.4);
-      border-radius: 99px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(212, 175, 55, 0.8);
-    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.03); }
+    ::-webkit-scrollbar-thumb { background: rgba(212, 175, 55, 0.4); border-radius: 99px; }
   </style>
 </head>
-<body class="text-stone-700 min-h-screen relative flex flex-col selection:bg-amber-100 selection:text-amber-900">
+<body class="text-stone-700 min-h-screen relative flex flex-col selection:bg-amber-100 selection:text-amber-900 pb-20 lg:pb-0">
 
-  <!-- 背景動態金色微光粒子 -->
+  <!-- 背景動態粒子 -->
   <canvas id="ambient-canvas"></canvas>
 
-  <!-- 頂部頁眉 navigation -->
-  <header class="relative z-20 px-4 md:px-6 py-4 border-b border-amber-900/10 bg-white/80 backdrop-blur-md shadow-sm">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+  <!-- 頂部頁眉 -->
+  <header class="relative z-20 px-4 py-3 md:py-4 border-b border-amber-900/10 bg-white/90 backdrop-blur-md shadow-sm sticky top-0">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       
-      <!-- 主題標題與 30 週年專屬徽章 -->
-      <div class="flex items-center gap-3.5">
-        <!-- 30週年紀念徽章 -->
-        <div class="relative animate-floatBadge">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex flex-col items-center justify-center text-white shadow-lg shadow-amber-600/25 border-2 border-amber-200 cursor-pointer" onclick="handleBadgeClick()">
-            <span class="font-cinzel text-xs font-semibold leading-none tracking-widest text-amber-200">TKU</span>
-            <span class="font-cinzel text-2xl font-black leading-tight text-white drop-shadow">30</span>
-            <span class="text-[9px] font-bold tracking-tighter text-amber-100">ANNIVERSARY</span>
+      <!-- 主題標題 -->
+      <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
+        <div class="flex items-center gap-3">
+          <div class="relative animate-floatBadge flex-shrink-0" onclick="setupBadgeSecretClick()">
+            <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex flex-col items-center justify-center text-white shadow-lg border-2 border-amber-200">
+              <span class="font-cinzel text-[10px] md:text-xs font-semibold leading-none tracking-widest text-amber-200">TKU</span>
+              <span class="font-cinzel text-xl md:text-2xl font-black leading-tight text-white drop-shadow">30</span>
+            </div>
+            <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-rose-500 border border-white text-[10px] text-white flex items-center justify-center font-bold">🎓</div>
           </div>
-          <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-rose-500 border border-white text-[10px] text-white flex items-center justify-center font-bold">
-            🎓
+
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-200/80">淡江教科系</span>
+              <span class="inline-flex items-center gap-1 text-[10px] md:text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                LIVE 同步中
+              </span>
+            </div>
+            <h1 class="text-lg md:text-2xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">30 周年慶祝福牆</h1>
           </div>
         </div>
 
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-200/80">
-              淡江大學教育科技學系
-            </span>
-            <span class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              跨裝置即時雲端同步
-            </span>
-          </div>
-          <h1 class="text-xl md:text-2xl lg:text-3xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">
-            30 周年慶・數位祝福留言牆
-          </h1>
-          <p class="text-xs md:text-sm text-stone-500 font-medium mt-0.5">
-            「三十而立・點亮教科・智慧傳承・創思未來」
-          </p>
+        <!-- 手機版專屬統計精簡顯示 -->
+        <div class="lg:hidden px-2 py-1 bg-amber-50/80 border border-amber-200/80 rounded-lg flex items-center gap-1 text-amber-900">
+          <i data-lucide="sparkles" class="w-3 h-3 text-amber-600"></i>
+          <span id="wish-counter-mobile" class="text-sm font-black font-mono">0</span>
         </div>
       </div>
 
-      <!-- 頂部操作與導覽按鈕 -->
-      <div class="flex items-center gap-2.5 flex-wrap">
-        <!-- 留言統計 -->
+      <!-- 頂部操作按鈕 (電腦版) -->
+      <div class="hidden lg:flex items-center gap-2.5">
         <div class="px-3.5 py-2 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-center gap-2 text-stone-700 shadow-xs">
           <i data-lucide="sparkles" class="w-4 h-4 text-amber-600"></i>
           <span class="text-xs font-medium">匯聚祝福：</span>
@@ -187,372 +139,99 @@
           <span class="text-xs font-medium">篇</span>
         </div>
 
-        <!-- 舞台自動輪播滾動 -->
-        <button onclick="toggleAutoScroll()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 hover:border-amber-400 hover:bg-amber-50 text-stone-700 transition flex items-center gap-1.5 shadow-xs">
+        <button id="toggle-autoscroll" onclick="toggleAutoScroll()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 hover:border-amber-400 hover:bg-amber-50 text-stone-700 transition flex items-center gap-1.5">
           <i data-lucide="play" id="autoscroll-icon" class="w-3.5 h-3.5 text-amber-600"></i>
           <span id="autoscroll-label">舞台輪播</span>
         </button>
 
-        <!-- 留下祝福開關 -->
-        <button onclick="openSenderModal()" class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md shadow-amber-600/25 transition flex items-center gap-1.5 active:scale-95">
+        <button onclick="openSenderModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md transition flex items-center gap-1.5">
           <i data-lucide="edit-3" class="w-4 h-4"></i>
           <span>送上祝福</span>
         </button>
 
-        <!-- 管理員未解鎖時顯示的密碼登入按鈕 -->
-        <button id="admin-unlock-btn" onclick="promptAdminPassword()" class="px-3 py-2 rounded-xl text-xs font-bold bg-stone-100 hover:bg-amber-100 text-stone-600 hover:text-amber-900 transition flex items-center gap-1 shadow-xs" title="主辦單位後台管理驗證">
+        <button id="admin-unlock-btn" onclick="promptAdminPassword()" class="px-3 py-2 rounded-xl text-xs font-bold bg-stone-100 hover:bg-amber-100 text-stone-600 transition flex items-center gap-1">
           <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-600"></i>
-          <span>管理員驗證</span>
         </button>
 
-        <!-- 後台管理開關 (管理者登入後顯示) -->
-        <button id="admin-portal-btn" onclick="toggleAdminDrawer()" class="hidden px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold bg-slate-800 hover:bg-slate-900 text-amber-300 shadow-md transition flex items-center gap-1.5 relative border border-amber-500/30">
-          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
-          <span>管理中心</span>
-          <span id="pending-badge" class="hidden absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full animate-bounce">0</span>
-        </button>
-
-        <!-- 投影全螢幕按鈕 -->
-        <button onclick="toggleFullScreen()" title="切換投影全螢幕" class="p-2 rounded-xl text-stone-600 bg-white border border-stone-200 hover:bg-amber-50 transition shadow-xs">
-          <i data-lucide="maximize" class="w-4 h-4"></i>
+        <button id="admin-portal-btn" onclick="toggleAdminDrawer()" class="hidden px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-800 text-amber-300 shadow-md transition flex items-center gap-1.5">
+          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>管理中心
         </button>
       </div>
-
     </div>
   </header>
 
-  <!-- 搜尋與身分篩選欄 (Live Stream Bar) -->
-  <section class="relative z-10 max-w-7xl mx-auto w-full px-5 pt-4 flex flex-wrap items-center justify-between gap-3">
-    <!-- 身分 Filter Buttons -->
-    <div class="flex items-center gap-1.5 flex-wrap text-xs" id="role-filter-group">
-      <button onclick="setRoleFilter('ALL')" class="role-btn px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 shadow-xs" data-role="ALL">全部留言</button>
-      <button onclick="setRoleFilter('畢業系友')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="畢業系友">🎓 畢業系友</button>
-      <button onclick="setRoleFilter('教科在校生')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="教科在校生">🎒 在校學生</button>
-      <button onclick="setRoleFilter('系上師長')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="系上師長">📚 師長教職</button>
-      <button onclick="setRoleFilter('貴賓好友')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="貴賓好友">🤝 貴賓好友</button>
+  <!-- 搜尋與身分篩選欄 (支援手機橫向滑動) -->
+  <section class="relative z-10 max-w-7xl mx-auto w-full px-4 pt-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
+    <div class="flex items-center gap-2 overflow-x-auto w-full hide-scrollbar pb-1" id="role-filter-group">
+      <button onclick="setRoleFilter('ALL')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 text-xs" data-role="ALL">全部留言</button>
+      <button onclick="setRoleFilter('畢業系友')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs" data-role="畢業系友">🎓 畢業系友</button>
+      <button onclick="setRoleFilter('教科在校生')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs" data-role="教科在校生">🎒 在校學生</button>
+      <button onclick="setRoleFilter('系上師長')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs" data-role="系上師長">📚 師長教職</button>
+      <button onclick="setRoleFilter('貴賓好友')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs" data-role="貴賓好友">🤝 貴賓好友</button>
     </div>
-
-    <!-- 搜尋框 -->
-    <div class="relative flex-1 max-w-xs">
+    
+    <div class="relative w-full lg:max-w-xs shrink-0">
       <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"></i>
-      <input type="text" id="live-search-input" oninput="handleSearch(this.value)" placeholder="搜尋發言人或關鍵字..." class="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/40 bg-white/90 shadow-xs" />
+      <input type="text" id="live-search-input" oninput="handleSearch(this.value)" placeholder="搜尋發言人或關鍵字..." class="w-full text-sm pl-9 pr-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:border-amber-500 bg-white/90 shadow-sm" />
     </div>
   </section>
 
   <!-- 主要內容區 -->
-  <main class="relative z-10 flex-1 p-5 md:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
-    
-    <!-- 祝福卡片流 / 網格 -->
-    <section class="flex-1">
-      <div id="wishes-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max transition-all">
-        <!-- 卡片由 JavaScript 動態填入 -->
+  <main class="relative z-10 flex-1 p-4 md:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
+    <!-- 祝福卡片網格 -->
+    <section class="flex-1 w-full">
+      <div id="wishes-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 auto-rows-max transition-all">
+        <!-- JS 動態填入 -->
       </div>
-
-      <div id="empty-state" class="hidden text-center py-20 bg-white/40 rounded-3xl border border-amber-900/5">
-        <div class="w-20 h-20 mx-auto rounded-full bg-amber-100/80 flex items-center justify-center text-amber-600 mb-3 shadow-inner">
-          <i data-lucide="heart-handshake" class="w-10 h-10"></i>
+      <div id="empty-state" class="hidden text-center py-12 md:py-20 bg-white/40 rounded-3xl border border-amber-900/5 mt-4">
+        <div class="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-full bg-amber-100/80 flex items-center justify-center text-amber-600 mb-3 shadow-inner">
+          <i data-lucide="heart-handshake" class="w-8 h-8 md:w-10 md:h-10"></i>
         </div>
-        <h3 class="text-xl font-bold text-stone-700 font-serifTc">尚無符合此條件的祝福</h3>
-        <p class="text-stone-400 text-sm mt-1">快點擊右上角「送上祝福」或用手機掃碼留言吧！</p>
+        <h3 class="text-lg md:text-xl font-bold text-stone-700 font-serifTc">尚無符合條件的祝福</h3>
+        <p class="text-stone-400 text-xs md:text-sm mt-1">趕快送上第一筆祝福吧！</p>
       </div>
     </section>
 
-    <!-- 投影端右側常駐看板：現場 QR Code 掃描區 -->
-    <aside class="lg:w-80 w-full flex-shrink-0 flex flex-col gap-4">
+    <!-- 投影端右側 QR Code 掃描區 (手機版自動隱藏，因為手機本身就能直接留言) -->
+    <aside class="hidden lg:flex w-80 flex-shrink-0 flex-col gap-4">
       <div class="sticky top-24 bg-white/85 backdrop-blur-md rounded-3xl p-6 border border-amber-900/10 shadow-xl text-center flex flex-col items-center">
-        
-        <!-- 慶典標章 -->
         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100/70 text-amber-800 border border-amber-200 mb-3">
           <i data-lucide="camera" class="w-3.5 h-3.5 text-amber-700"></i> 手機掃碼即刻上牆
         </span>
-
         <h2 class="text-lg font-bold text-stone-800 font-serifTc">淡江教科 30th 祝願集結</h2>
-        <p class="text-xs text-stone-500 mt-1 mb-4 leading-relaxed">
-          相機對準條碼即可留言<br/>分享那些年在淡江的熱血與感動
-        </p>
+        <p class="text-xs text-stone-500 mt-1 mb-4 leading-relaxed">相機對準條碼即可留言</p>
 
-        <!-- QR Code 容器 (點擊可放大展示) -->
-        <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative" onclick="openQrModal()" title="點擊放大 QR Code 供全場掃描">
+        <!-- QR Code -->
+        <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative" onclick="openQrModal()">
           <div id="qrcode-display" class="flex justify-center items-center"></div>
           <div class="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 rounded-2xl flex items-center justify-center text-white text-xs font-semibold transition backdrop-blur-xs">
-            <span class="flex items-center gap-1.5 bg-stone-900/90 px-3 py-1.5 rounded-xl shadow-lg">
-              <i data-lucide="maximize-2" class="w-4 h-4 text-amber-400"></i> 點擊放大條碼
-            </span>
+            點擊放大
           </div>
         </div>
 
-        <p class="text-[11px] text-stone-400 mt-3 flex items-center gap-1">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i> 免下載 App・同步大螢幕
-        </p>
-
-        <!-- 現場演示即時模擬模組 -->
-        <div class="w-full mt-4 pt-4 border-t border-stone-100 flex flex-col gap-2.5">
+        <!-- 現場模擬模組 -->
+        <div class="w-full mt-5 pt-4 border-t border-stone-100 flex flex-col gap-2.5">
           <div class="flex items-center justify-between text-xs text-stone-600 font-bold">
-            <span class="flex items-center gap-1"><i data-lucide="play-circle" class="w-3.5 h-3.5 text-amber-600"></i> 現場模擬祝賀聲浪</span>
-            <span id="sim-status" class="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 font-normal">靜止</span>
+            <span class="flex items-center gap-1"><i data-lucide="play-circle" class="w-3.5 h-3.5 text-amber-600"></i> 現場模擬留言</span>
           </div>
-          
           <div class="flex items-center gap-2">
-            <button onclick="triggerManualSim()" class="flex-1 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1">
-              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> 手動觸發 1 則
-            </button>
-            <button id="auto-sim-btn" onclick="toggleAutoSim()" class="flex-1 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1">
-              <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-600"></i> 自動生成
-            </button>
-          </div>
-        </div>
-
-        <!-- 現場設定與匯出 -->
-        <div class="w-full mt-3 pt-3 border-t border-stone-100 flex flex-col gap-2">
-          <div class="flex items-center justify-between text-xs text-stone-500">
-            <span>現場設定</span>
-            <button onclick="exportWishes()" class="text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1">
-              <i data-lucide="download" class="w-3 h-3"></i> 匯出名冊
-            </button>
-          </div>
-          <div class="flex gap-1.5">
-            <input id="custom-qr-url" type="text" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-stone-200 focus:outline-none focus:ring-1 focus:ring-amber-500 bg-stone-50" placeholder="活動網址" />
-            <button onclick="updateQrUrl()" class="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs font-medium transition text-stone-700">更新</button>
+            <button onclick="triggerManualSim()" class="flex-1 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-xs font-medium transition shadow-xs">新增 1 則</button>
+            <button onclick="clearAllData()" class="flex-1 py-1.5 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-lg text-xs font-medium transition shadow-xs">清空資料</button>
           </div>
         </div>
       </div>
     </aside>
-
   </main>
 
-  <!-- ========================================== -->
-  <!-- 抽屜式「後台管理中心」 Drawer & Portal      -->
-  <!-- ========================================== -->
-  <div id="admin-drawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-slate-900 text-slate-100 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-    
-    <!-- 後台 Top Bar -->
-    <div class="p-5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between backdrop-blur">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
-          <i data-lucide="sliders" class="w-5 h-5"></i>
-        </div>
-        <div>
-          <h2 class="font-bold text-lg text-white font-serifTc">教科 30 周年・現場留言管理中心</h2>
-          <p class="text-xs text-slate-400">實時審核、置頂控制、內容過濾與數據統計</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <button onclick="lockAdminSession()" class="px-2.5 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold border border-rose-500/30 transition flex items-center gap-1" title="登出管理員身分">
-          <i data-lucide="lock" class="w-3.5 h-3.5"></i> 登出後台
-        </button>
-        <button onclick="toggleAdminDrawer()" class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-700 transition">
-          <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-      </div>
-    </div>
+  <!-- 手機版專屬懸浮留言按鈕 (FAB) -->
+  <button onclick="openSenderModal()" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-95 transition-transform z-40 border-2 border-amber-200">
+    <i data-lucide="edit-3" class="w-6 h-6"></i>
+  </button>
 
-    <!-- 後台導覽 Tabs -->
-    <div class="flex border-b border-slate-800 bg-slate-900/80 px-5 gap-6">
-      <button id="tab-btn-moderation" onclick="switchAdminTab('moderation')" class="py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5">
-        <i data-lucide="check-square" class="w-4 h-4"></i> 留言審核與管理
-      </button>
-      <button id="tab-btn-stats" onclick="switchAdminTab('stats')" class="py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5">
-        <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 數據統計面板
-      </button>
-      <button id="tab-btn-settings" onclick="switchAdminTab('settings')" class="py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5">
-        <i data-lucide="settings" class="w-4 h-4"></i> 審核機制設定
-      </button>
-    </div>
-
-    <!-- 後台內容區塊 (可捲動) -->
-    <div class="p-5 flex-1 overflow-y-auto space-y-6">
-      
-      <!-- TAB 1: 留言審核與管理 -->
-      <div id="admin-tab-moderation" class="space-y-4">
-        <!-- 狀態過濾與一鍵操作 -->
-        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/60">
-          <div class="flex items-center gap-1 text-xs">
-            <button id="admin-st-ALL" onclick="setAdminStatusFilter('ALL')" class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold">全部 (<span id="cnt-all">0</span>)</button>
-            <button id="admin-st-PENDING" onclick="setAdminStatusFilter('PENDING')" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">待審核 (<span id="cnt-pending">0</span>)</button>
-            <button id="admin-st-APPROVED" onclick="setAdminStatusFilter('APPROVED')" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">已展示 (<span id="cnt-approved">0</span>)</button>
-            <button id="admin-st-REJECTED" onclick="setAdminStatusFilter('REJECTED')" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">已隱藏 (<span id="cnt-rejected">0</span>)</button>
-          </div>
-
-          <button onclick="batchApprovePending()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
-            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> 一鍵核准待審項目
-          </button>
-        </div>
-
-        <!-- 管理列表清單 -->
-        <div id="admin-message-list" class="space-y-3">
-          <!-- JS 動態渲染卡片列表 -->
-        </div>
-      </div>
-
-      <!-- TAB 2: 數據統計面板 -->
-      <div id="admin-tab-stats" class="hidden space-y-5">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700/70">
-            <span class="text-xs text-slate-400">總接收留言數</span>
-            <div id="stat-total" class="text-2xl font-bold text-amber-400 mt-1">0</div>
-          </div>
-          <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700/70">
-            <span class="text-xs text-slate-400">審核通過率</span>
-            <div id="stat-rate" class="text-2xl font-bold text-emerald-400 mt-1">0%</div>
-          </div>
-          <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700/70">
-            <span class="text-xs text-slate-400">愛心互動總數</span>
-            <div id="stat-likes" class="text-2xl font-bold text-rose-400 mt-1">0</div>
-          </div>
-          <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700/70">
-            <span class="text-xs text-slate-400">當前置頂卡片</span>
-            <div id="stat-pinned" class="text-2xl font-bold text-sky-400 mt-1">0</div>
-          </div>
-        </div>
-
-        <!-- 身分占比視覺化 Bar -->
-        <div class="p-5 bg-slate-800 rounded-2xl border border-slate-700/70">
-          <h4 class="text-sm font-bold text-white mb-3">留言身分組成分析</h4>
-          <div id="role-chart-container" class="space-y-3">
-            <!-- JS 動態產生條狀圖 -->
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 3: 審核機制設定 -->
-      <div id="admin-tab-settings" class="hidden space-y-5">
-        <div class="p-5 bg-slate-800 rounded-2xl border border-slate-700/70 space-y-4">
-          <h4 class="text-sm font-bold text-amber-400 border-b border-slate-700 pb-2">現場顯示防護機制</h4>
-          
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm font-bold text-slate-200">開啟「先審後顯」模式</div>
-              <p class="text-xs text-slate-400 mt-0.5">開啟後，民眾留言需經由後台人員審核點擊「展示」後才會顯示在大螢幕。</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="setting-auto-moderate" onchange="toggleAutoModerateSetting(this.checked)" class="sr-only peer">
-              <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-            </label>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1.5">敏感詞自動過濾（以逗號分隔）</label>
-            <input type="text" id="setting-sensitive-words" value="廣告, 詐騙, 買粉, 政治" class="w-full text-xs p-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500" />
-            <p class="text-[11px] text-slate-500 mt-1">包含上述詞彙的留言將自動被替換為 *** 符號。</p>
-          </div>
-
-          <div class="flex items-center justify-between pt-2">
-            <span class="text-xs text-slate-300">新留言提示音效</span>
-            <input type="checkbox" id="setting-sound" checked class="w-4 h-4 accent-amber-500 rounded">
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 管理員密碼輸入 Modal -->
-  <div id="password-modal" class="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 text-slate-100 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative border border-slate-700 text-center animate-popNote">
-      <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-3 border border-amber-500/30">
-        <i data-lucide="shield-alert" class="w-6 h-6"></i>
-      </div>
-      <h3 class="text-lg font-bold text-white font-serifTc">後台管理員身份驗證</h3>
-      <p class="text-xs text-slate-400 mt-1 mb-4">請輸入淡江教科 30 周年工作人員管理密碼</p>
-      
-      <form onsubmit="handlePasswordSubmit(event)" class="space-y-3">
-        <input type="password" id="admin-pass-input" placeholder="請輸入密碼 (預設: tku30)" class="w-full text-center text-sm px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-amber-300 focus:outline-none focus:border-amber-500 font-mono tracking-widest placeholder:tracking-normal placeholder:text-slate-500" required />
-        <p id="pass-error-msg" class="text-xs text-rose-400 hidden font-bold">密碼錯誤，請重新輸入！</p>
-        
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="closePasswordModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition">取消</button>
-          <button type="submit" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold transition">驗證登入</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- 卡片編輯 Modal -->
-  <div id="edit-modal" class="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 text-slate-100 rounded-3xl p-6 max-w-md w-full shadow-2xl relative border border-slate-700 animate-popNote">
-      <h3 class="text-base font-bold text-white font-serifTc mb-4 flex items-center gap-2">
-        <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i> 編輯留言內容
-      </h3>
-      <input type="hidden" id="edit-id" />
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-400 mb-1">發言人姓名 / 暱稱</label>
-          <input type="text" id="edit-author" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500" />
-        </div>
-        <div>
-          <label class="block text-slate-400 mb-1">祝福內文</label>
-          <textarea id="edit-message" rows="4" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500 font-warm"></textarea>
-        </div>
-      </div>
-      <div class="flex justify-end gap-2 mt-5">
-        <button onclick="closeEditModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition">取消</button>
-        <button onclick="saveEditCard()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold transition">儲存修改</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 卡片放大檢視彈窗 -->
-  <div id="magnify-modal" class="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all transform animate-popNote" id="magnify-card-content">
-      <div class="washi-tape"></div>
-      <button onclick="closeMagnifyModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-black/5 transition">
-        <i data-lucide="x" class="w-6 h-6"></i>
-      </button>
-
-      <div class="flex items-center gap-3.5 mb-4">
-        <span id="mag-avatar" class="w-12 h-12 rounded-2xl text-2xl flex items-center justify-center bg-white/80 shadow-xs border border-black/5"></span>
-        <div>
-          <div class="flex items-center gap-2">
-            <h4 id="mag-name" class="text-xl font-bold text-stone-800 font-serifTc"></h4>
-            <span id="mag-role" class="text-xs px-2 py-0.5 rounded-md font-bold"></span>
-          </div>
-          <span id="mag-time" class="text-xs text-stone-500"></span>
-        </div>
-      </div>
-
-      <div class="p-4 bg-white/60 rounded-2xl border border-black/5 mb-4">
-        <p id="mag-text" class="text-stone-800 text-lg leading-relaxed font-warm whitespace-pre-wrap"></p>
-      </div>
-
-      <div class="flex justify-end gap-2">
-        <button id="mag-like-btn" class="px-4 py-2 rounded-xl bg-white/90 hover:bg-white text-rose-600 font-bold text-sm shadow-xs border border-rose-100 flex items-center gap-1.5 transition">
-          <i data-lucide="heart" class="w-4 h-4 fill-rose-500 text-rose-500"></i>
-          <span id="mag-like-count">送上溫暖愛心</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- QR Code 巨幅投影展示彈窗 -->
-  <div id="qr-modal" class="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-md hidden flex items-center justify-center p-6">
-    <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center relative shadow-2xl animate-popNote border-4 border-amber-200">
-      <button onclick="closeQrModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-stone-100 transition">
-        <i data-lucide="x" class="w-6 h-6"></i>
-      </button>
-      
-      <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-3">
-        <i data-lucide="qr-code" class="w-8 h-8"></i>
-      </div>
-      <h3 class="text-2xl font-bold font-serifTc text-stone-800">淡江教科 30 周年・現場留言</h3>
-      <p class="text-stone-500 text-sm mt-1 mb-6">歡迎系友、在校生、師長拿起手機掃描條碼</p>
-      
-      <div class="p-5 bg-amber-50/50 border border-amber-200 rounded-3xl inline-block shadow-inner">
-        <div id="qrcode-large" class="mx-auto flex justify-center"></div>
-      </div>
-      
-      <div class="mt-6">
-        <button onclick="closeQrModal()" class="px-8 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white font-bold text-sm transition">
-          返回祝福牆
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 參與者手機掃碼留言互動視窗 -->
-  <div id="sender-modal" class="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-popNote border border-amber-900/10">
-      
-      <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-4 sm:hidden"></div>
+  <!-- 留言互動視窗 Modal -->
+  <div id="sender-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm hidden flex items-end md:items-center justify-center p-0 md:p-4 transition-opacity">
+    <div class="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-popNote">
+      <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-4 md:hidden"></div>
       
       <div class="flex items-center justify-between pb-3 border-b border-stone-100">
         <div class="flex items-center gap-2.5">
@@ -561,1573 +240,95 @@
           </div>
           <div>
             <h3 class="font-bold text-stone-800 text-base font-serifTc">送上教科 30 周年祝福</h3>
-            <p class="text-[11px] text-stone-400">三十而立，留下您與教科系的專屬回憶</p>
           </div>
         </div>
-        <button onclick="closeSenderModal()" class="text-stone-400 hover:text-stone-600 p-1.5 rounded-full hover:bg-stone-100 transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeSenderModal()" class="text-stone-400 hover:text-stone-600 p-2 bg-stone-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <!-- 留言表單 -->
       <form id="wish-form" onsubmit="handleFormSubmit(event)" class="space-y-4 mt-4">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- 暱稱 / 姓名 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">您的姓名 / 暱稱 <span class="text-rose-500">*</span></label>
-            <input type="text" id="input-author" required maxlength="16" placeholder="如：第15屆 宜君、阿翔" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50" />
+            <label class="block text-xs font-bold text-stone-700 mb-1">姓名 / 暱稱 <span class="text-rose-500">*</span></label>
+            <input type="text" id="input-author" required maxlength="16" placeholder="如：第15屆 宜君" class="w-full text-base px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50" />
           </div>
-
-          <!-- 身分 / 角色選單 -->
           <div>
             <label class="block text-xs font-bold text-stone-700 mb-1">您的身分 <span class="text-rose-500">*</span></label>
-            <select id="input-role" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50">
+            <select id="input-role" required class="w-full text-base px-3.5 py-2.5 rounded-xl border border-stone-200 bg-stone-50">
               <option value="畢業系友">🎓 畢業系友</option>
               <option value="教科在校生">🎒 教科在校生</option>
-              <option value="系上師長">📚 系上師長 / 助教</option>
-              <option value="退休師長">🌟 退休教職員</option>
-              <option value="貴賓好友">🤝 友系 / 貴賓好友</option>
+              <option value="系上師長">📚 系上師長</option>
+              <option value="貴賓好友">🤝 貴賓好友</option>
             </select>
           </div>
         </div>
 
-        <!-- 心情 Emoji 選擇 -->
         <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1.5">選擇代表圖示</label>
+          <label class="block text-xs font-bold text-stone-700 mb-1.5">代表圖示</label>
           <div class="grid grid-cols-8 gap-1.5" id="emoji-selector"></div>
         </div>
 
-        <!-- 便利貼底色選擇 -->
         <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1.5">小卡色調</label>
+          <label class="block text-xs font-bold text-stone-700 mb-1.5">卡片色調</label>
           <div class="flex items-center gap-3" id="color-selector"></div>
         </div>
 
-        <!-- 祝福內容 -->
         <div>
           <div class="flex justify-between items-center mb-1">
-            <label class="text-xs font-bold text-stone-700">祝福或回憶留言 <span class="text-rose-500">*</span></label>
+            <label class="text-xs font-bold text-stone-700">祝福內容 <span class="text-rose-500">*</span></label>
             <span id="char-count" class="text-[11px] text-stone-400">0/150</span>
           </div>
-          <textarea id="input-message" required maxlength="150" rows="3" placeholder="想對教科系、系上老師或同學們說的話..." class="w-full text-sm p-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50 font-warm" oninput="updateCharCount()"></textarea>
+          <textarea id="input-message" required maxlength="150" rows="3" placeholder="想對教科系說的話..." class="w-full text-base p-3 rounded-xl border border-stone-200 bg-stone-50 font-warm" oninput="updateCharCount()"></textarea>
         </div>
 
-        <!-- 教科 30 週年專屬快捷錦囊 -->
-        <div>
-          <label class="block text-[11px] font-semibold text-stone-400 mb-1.5 flex items-center gap-1">
-            <i data-lucide="zap" class="w-3 h-3 text-amber-500"></i> 快速套用教科專屬祝福：
-          </label>
-          <div class="flex flex-wrap gap-1.5">
-            <button type="button" onclick="applyPreset('祝淡江教科系30週年快樂！感恩師長的啟蒙，願教科繼續璀璨耀眼！✨🎓')" class="text-xs px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/60 transition">🎂 祝教科30生日快樂</button>
-            <button type="button" onclick="applyPreset('回想起在電腦教室熬夜做專題的日子，教科永遠是最溫暖的家！❤️')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">💡 電腦教室回憶</button>
-            <button type="button" onclick="applyPreset('三十而立・智慧領航！祝福教科系在AI教育科技新浪潮中繼續引領未來！🚀')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">🚀 邁向AI智慧未來</button>
-            <button type="button" onclick="applyPreset('身為教科人，終生教科人！祝系運昌隆、桃李滿天下！🌱')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">🌟 桃李滿天下</button>
-          </div>
-        </div>
-
-        <!-- 送出按鈕 -->
-        <button type="submit" class="w-full py-3 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 hover:from-amber-700 hover:to-amber-900 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-amber-700/20 transition flex items-center justify-center gap-2 mt-4">
-          <i data-lucide="send" class="w-4 h-4"></i>
-          <span>送上大螢幕祝賀</span>
+        <button type="submit" class="w-full py-3.5 bg-amber-600 text-white font-bold rounded-xl shadow-lg mt-2 flex items-center justify-center gap-2 active:bg-amber-700">
+          <i data-lucide="send" class="w-5 h-5"></i> 送出祝福
         </button>
       </form>
-
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { 
-      getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  <!-- 卡片放大檢視彈窗 -->
+  <div id="magnify-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="relative w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl transition-all transform animate-popNote" id="magnify-card-content">
+      <div class="washi-tape"></div>
+      <button onclick="closeMagnifyModal()" class="absolute top-3 right-3 text-stone-400 bg-white/50 p-2 rounded-full"><i data-lucide="x" class="w-6 h-6"></i></button>
 
-    // Setup provided environment variables
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-tku-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' 
-      ? JSON.parse(__firebase_config) 
-      : {}; 
+      <div class="flex items-center gap-3.5 mb-4 mt-2">
+        <span id="mag-avatar" class="w-12 h-12 rounded-2xl text-2xl flex items-center justify-center bg-white/80 shadow-xs border border-black/5"></span>
+        <div>
+          <h4 id="mag-name" class="text-lg md:text-xl font-bold text-stone-800 font-serifTc"></h4>
+          <span id="mag-role" class="text-xs px-2 py-0.5 rounded-md font-bold mt-1 inline-block"></span>
+        </div>
+      </div>
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
+      <div class="p-4 bg-white/60 rounded-2xl border border-black/5 mb-4">
+        <p id="mag-text" class="text-stone-800 text-base md:text-lg leading-relaxed font-warm whitespace-pre-wrap"></p>
+      </div>
 
-    // Strict Paths Requirement
-    // Public Data (Sharing with other users)
-    const getWishesCollection = () => collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
-    const getWishDoc = (docId) => doc(db, 'artifacts', appId, 'public', 'data', 'wishes', docId);
-    const getSettingsDoc = () => doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
-
-    // Make global variables for interactions inside vanilla JS
-    window.wishes = [];
-    window.isAutoModerateEnabled = false;
-
-    // Constants
-    const ADMIN_SESSION_KEY = 'tku_et_30th_admin_authed';
-    const VALID_PASSWORDS = ['tku30'];
-
-    const CARD_THEMES = [
-      { id: 'yellow', name: '暖杏黃', bg: 'bg-[#FEF7D8]', border: 'border-[#EEDFA3]', text: 'text-amber-950', badgeBg: 'bg-amber-200/70', badgeText: 'text-amber-900' },
-      { id: 'pink', name: '淡櫻粉', bg: 'bg-[#FCE7E9]', border: 'border-[#EFC4C9]', text: 'text-rose-950', badgeBg: 'bg-rose-200/70', badgeText: 'text-rose-900' },
-      { id: 'green', name: '薄荷綠', bg: 'bg-[#E7F5EC]', border: 'border-[#C8E8D2]', text: 'text-emerald-950', badgeBg: 'bg-emerald-200/70', badgeText: 'text-emerald-900' },
-      { id: 'blue', name: '晨曦藍', bg: 'bg-[#E3F2FD]', border: 'border-[#BEDCF5]', text: 'text-sky-950', badgeBg: 'bg-sky-200/70', badgeText: 'text-sky-900' },
-      { id: 'purple', name: '薰衣紫', bg: 'bg-[#EFEAFF]', border: 'border-[#D9CDF7]', text: 'text-purple-950', badgeBg: 'bg-purple-200/70', badgeText: 'text-purple-900' }
-    ];
-
-    const EMOJIS = ['🎓', '🎂', '✨', '❤️', '🚀', '🌱', '🎉', '💡'];
-
-    // State Variables
-    let selectedEmoji = '🎓';
-    let selectedThemeId = 'yellow';
-    let isAutoScrolling = false;
-    let autoScrollInterval = null;
-    let currentRoleFilter = 'ALL';
-    let currentSearchKeyword = '';
-    let isAdminOpen = false;
-    let isAdminAuthenticated = false;
-    let currentAdminTab = 'moderation';
-    let currentAdminStatusFilter = 'ALL';
-    let autoSimInterval = null;
-    let badgeClickCount = 0;
-    let badgeClickTimer = null;
-
-    // Authentication and DB Listener
-    async function initAuthAndData() {
-      try {
-        // Authenticate FIRST (Rule #3)
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-
-        if (!auth.currentUser) return;
-
-        // Setup real-time listeners for exact paths
-        onSnapshot(getWishesCollection(), (snapshot) => {
-          const cloudWishes = [];
-          snapshot.forEach((document) => {
-            cloudWishes.push({ id: document.id, ...document.data() });
-          });
-
-          // Sort wishes locally memory-side (No complex queries requirement #2)
-          cloudWishes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-          window.wishes = cloudWishes;
-
-          if (cloudWishes.length === 0 && !window.hasInitializedDefault) {
-            window.hasInitializedDefault = true;
-            seedDefaultWishes();
-            return;
-          }
-
-          renderWishes();
-          updateAdminDashboard();
-        }, (error) => {
-          console.error("Firestore wishes stream error:", error);
-        });
-
-        onSnapshot(getSettingsDoc(), (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            window.isAutoModerateEnabled = !!data.autoModerate;
-            const autoModCheckbox = document.getElementById('setting-auto-moderate');
-            if (autoModCheckbox) autoModCheckbox.checked = window.isAutoModerateEnabled;
-            if (data.sensitiveWords) {
-              const sensInput = document.getElementById('setting-sensitive-words');
-              if (sensInput) sensInput.value = data.sensitiveWords;
-            }
-          }
-        }, (error) => {
-          console.error("Firestore settings stream error:", error);
-        });
-
-      } catch (err) {
-        console.error("Auth / Initialization error:", err);
-      }
-    }
-
-    // Default Wishes Seeder
-    async function seedDefaultWishes() {
-      if (!auth.currentUser) return;
-      const DEFAULT_WISHES = [
-        {
-          author: '第5屆系友 家銘', role: '畢業系友', message: '不敢相信教科系已經 30 歲了！當年坐在電腦教室敲鍵盤的時光歷歷在目。祝教科系 30 週年生日快樂！', emoji: '🎂', themeId: 'yellow', timestamp: '剛剛', rotation: -1.2, likes: 18, status: 'APPROVED', isPinned: true, createdAt: Date.now() - 1000
-        },
-        {
-          author: '大四專題生 庭萱', role: '教科在校生', message: '在教科系四年的學習充滿挑戰與驚喜，祝我們教科系 30 歲生日快樂，也祝我們這屆畢業順利！🎓✨', emoji: '🎓', themeId: 'pink', timestamp: '12分鐘前', rotation: -0.9, likes: 14, status: 'APPROVED', isPinned: false, createdAt: Date.now() - 2000
-        }
-      ];
-
-      for (const wish of DEFAULT_WISHES) {
-        try {
-          await addDoc(getWishesCollection(), wish);
-        } catch(e) {}
-      }
-    }
-
-    // Exported helper methods for inline HTML
-    window.handleBadgeClick = () => {
-      badgeClickCount++;
-      clearTimeout(badgeClickTimer);
-      badgeClickTimer = setTimeout(() => { badgeClickCount = 0; }, 2000);
-
-      if (badgeClickCount >= 5) {
-        badgeClickCount = 0;
-        window.promptAdminPassword();
-      }
-    };
-
-    window.promptAdminPassword = () => {
-      if (isAdminAuthenticated) {
-        window.toggleAdminDrawer();
-        return;
-      }
-      document.getElementById('pass-error-msg').classList.add('hidden');
-      document.getElementById('admin-pass-input').value = '';
-      document.getElementById('password-modal').classList.remove('hidden');
-      setTimeout(() => { document.getElementById('admin-pass-input').focus(); }, 100);
-    };
-
-    window.closePasswordModal = () => document.getElementById('password-modal').classList.add('hidden');
-
-    window.handlePasswordSubmit = (e) => {
-      e.preventDefault();
-      const pwd = document.getElementById('admin-pass-input').value.trim().toLowerCase();
-      if (VALID_PASSWORDS.includes(pwd)) {
-        isAdminAuthenticated = true;
-        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
-        updateAdminUI();
-        window.closePasswordModal();
-        window.toggleAdminDrawer();
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.2 } });
-      } else {
-        document.getElementById('pass-error-msg').classList.remove('hidden');
-      }
-    };
-
-    window.lockAdminSession = () => {
-      isAdminAuthenticated = false;
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-      updateAdminUI();
-    };
-
-    function updateAdminUI() {
-      const adminBtn = document.getElementById('admin-portal-btn');
-      const unlockBtn = document.getElementById('admin-unlock-btn');
-
-      if (isAdminAuthenticated) {
-        if (adminBtn) adminBtn.classList.remove('hidden');
-        if (unlockBtn) unlockBtn.classList.add('hidden');
-      } else {
-        if (adminBtn) adminBtn.classList.add('hidden');
-        if (unlockBtn) unlockBtn.classList.remove('hidden');
-        if (isAdminOpen) {
-          window.toggleAdminDrawer();
-        }
-      }
-    }
-
-    // QR Codes Functionality
-    function initQRCodes() {
-      const url = window.location.href;
-      document.getElementById('custom-qr-url').value = url;
-      generateQRCodes(url);
-    }
-
-    function generateQRCodes(url) {
-      const sideContainer = document.getElementById('qrcode-display');
-      sideContainer.innerHTML = '';
-      new QRCode(sideContainer, { text: url, width: 140, height: 140, colorDark: '#451A03', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-
-      const largeContainer = document.getElementById('qrcode-large');
-      largeContainer.innerHTML = '';
-      new QRCode(largeContainer, { text: url, width: 240, height: 240, colorDark: '#451A03', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
-    }
-
-    window.updateQrUrl = () => {
-      const input = document.getElementById('custom-qr-url');
-      const val = input.value.trim();
-      if (val) generateQRCodes(val);
-    };
-    
-    window.openQrModal = () => document.getElementById('qr-modal').classList.remove('hidden');
-    window.closeQrModal = () => document.getElementById('qr-modal').classList.add('hidden');
-
-    // Chime Sound Notification (Graceful fallback)
-    function playChimeSound() {
-      const soundEnabled = document.getElementById('setting-sound')?.checked;
-      if (soundEnabled === false) return;
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const now = audioCtx.currentTime;
-        const notes = [1046.50, 1318.51, 1567.98];
-        notes.forEach((freq, idx) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-          gain.gain.setValueAtTime(0.12, now + idx * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.6);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now + idx * 0.08);
-          osc.stop(now + idx * 0.08 + 0.65);
-        });
-      } catch (e) { /* silent fail */ }
-    }
-
-    // Main Wish Rendering Logic
-    function renderWishes() {
-      const container = document.getElementById('wishes-container');
-      const emptyState = document.getElementById('empty-state');
-      const counter = document.getElementById('wish-counter');
-
-      let visible = window.wishes.filter(w => w.status === 'APPROVED');
-
-      // Manual filtering logic (Rule 2 mandates fetching all, parsing local memory)
-      if (currentRoleFilter !== 'ALL') {
-        visible = visible.filter(w => w.role === currentRoleFilter);
-      }
-
-      if (currentSearchKeyword) {
-        const kw = currentSearchKeyword.toLowerCase();
-        visible = visible.filter(w => 
-          (w.author && w.author.toLowerCase().includes(kw)) || 
-          (w.message && w.message.toLowerCase().includes(kw))
-        );
-      }
-
-      // Pin sort
-      visible.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
-
-      counter.innerText = window.wishes.filter(w => w.status === 'APPROVED').length;
-
-      if (visible.length === 0) {
-        container.innerHTML = '';
-        emptyState.classList.remove('hidden');
-        return;
-      }
-
-      emptyState.classList.add('hidden');
-      container.innerHTML = visible.map((item) => {
-        const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
-        const rot = item.rotation || 0;
-        const pinClass = item.isPinned ? 'pinned-card' : '';
-        
-        return `
-          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-5 shadow-sm relative cursor-pointer group flex flex-col justify-between ${pinClass}"
-               style="transform: rotate(${rot}deg);"
-               onclick="openMagnifyModal('${item.id}')">
-            
-            <div class="washi-tape ${item.isPinned ? 'washi-tape-gold' : ''}"></div>
-            
-            <div>
-              <div class="flex items-center justify-between gap-2 mb-3 pt-1">
-                <div class="flex items-center gap-2">
-                  <span class="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center text-xl shadow-xs">
-                    ${item.emoji || '🎓'}
-                  </span>
-                  <div>
-                    <div class="flex items-center gap-1">
-                      <h3 class="font-bold text-sm tracking-wide ${theme.text}">${escapeHtml(item.author || '')}</h3>
-                      ${item.isPinned ? '<i data-lucide="pin" class="w-3.5 h-3.5 text-amber-600 fill-amber-500"></i>' : ''}
-                    </div>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded ${theme.badgeBg} ${theme.badgeText}">
-                      ${escapeHtml(item.role || '系友')}
-                    </span>
-                  </div>
-                </div>
-                <span class="text-[11px] text-stone-400 font-medium">${item.timestamp || '剛剛'}</span>
-              </div>
-
-              <p class="text-stone-800 text-sm leading-relaxed font-warm whitespace-pre-line mb-3">
-                ${escapeHtml(item.message || '')}
-              </p>
-            </div>
-
-            <div class="flex items-center justify-between text-xs pt-2.5 border-t border-black/5 text-stone-500">
-              <span class="text-[11px] text-stone-400 group-hover:text-amber-800 font-medium transition flex items-center gap-1">
-                <i data-lucide="maximize" class="w-3 h-3"></i> 放大檢視
-              </span>
-              <button onclick="likeCard(event, '${item.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
-                <i data-lucide="heart" class="w-3.5 h-3.5 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
-                <span class="text-xs font-bold">${item.likes || 0}</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      lucide.createIcons();
-    }
-
-    // Form Submissions
-    window.setRoleFilter = (role) => {
-      currentRoleFilter = role;
-      document.querySelectorAll('#role-filter-group .role-btn').forEach(btn => {
-        if (btn.getAttribute('data-role') === role) {
-          btn.className = 'role-btn px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 shadow-xs';
-        } else {
-          btn.className = 'role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition';
-        }
-      });
-      renderWishes();
-    };
-
-    window.handleSearch = (val) => {
-      currentSearchKeyword = val.trim();
-      renderWishes();
-    };
-
-    window.likeCard = async (e, id) => {
-      e.stopPropagation();
-      if (!auth.currentUser) return;
-
-      const card = window.wishes.find(w => w.id === id);
-      if (card) {
-        const newLikes = (card.likes || 0) + 1;
-        try {
-          await updateDoc(getWishDoc(id), { likes: newLikes });
-          confetti({ particleCount: 25, spread: 45, origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight } });
-        } catch (err) { console.error("Like failed:", err); }
-      }
-    };
-
-    window.setupColorSelector = () => {
-      const container = document.getElementById('color-selector');
-      container.innerHTML = CARD_THEMES.map(t => `
-        <button type="button" onclick="selectTheme('${t.id}')" class="w-8 h-8 rounded-full ${t.bg} ${t.border} border-2 transition transform hover:scale-110 flex items-center justify-center shadow-xs">
-          ${t.id === selectedThemeId ? '<i data-lucide="check" class="w-4 h-4 text-stone-800"></i>' : ''}
+      <div class="flex justify-end gap-2">
+        <button id="mag-like-btn" class="px-4 py-2 rounded-xl bg-white/90 text-rose-600 font-bold text-sm shadow-xs border border-rose-100 flex items-center gap-1.5 active:scale-95">
+          <i data-lucide="heart" class="w-4 h-4 fill-rose-500 text-rose-500"></i>
+          <span id="mag-like-count">送上愛心</span>
         </button>
-      `).join('');
-    };
-
-    window.selectTheme = (themeId) => {
-      selectedThemeId = themeId;
-      window.setupColorSelector();
-      lucide.createIcons();
-    };
-
-    window.setupEmojiSelector = () => {
-      const container = document.getElementById('emoji-selector');
-      container.innerHTML = EMOJIS.map(emo => `
-        <button type="button" onclick="selectEmoji('${emo}')" class="p-2 text-xl rounded-xl border transition ${selectedEmoji === emo ? 'bg-amber-100 border-amber-400 scale-105 shadow-sm' : 'border-stone-100 hover:bg-stone-50'}">
-          ${emo}
-        </button>
-      `).join('');
-    };
-
-    window.selectEmoji = (emo) => {
-      selectedEmoji = emo;
-      window.setupEmojiSelector();
-    };
-
-    window.applyPreset = (text) => {
-      const textarea = document.getElementById('input-message');
-      textarea.value = text;
-      window.updateCharCount();
-    };
-
-    window.updateCharCount = () => {
-      const textarea = document.getElementById('input-message');
-      document.getElementById('char-count').innerText = `${textarea.value.length}/150`;
-    };
-
-    // Submitting a new wish
-    window.handleFormSubmit = async (e) => {
-      e.preventDefault();
-      if (!auth.currentUser) return; // Guard clause
-
-      const author = document.getElementById('input-author').value.trim();
-      const role = document.getElementById('input-role').value;
-      let message = document.getElementById('input-message').value.trim();
-
-      if (!author || !message) return;
-
-      const sensitiveInput = document.getElementById('setting-sensitive-words')?.value || '';
-      const sensitiveWords = sensitiveInput.split(',').map(s => s.trim()).filter(Boolean);
-      sensitiveWords.forEach(word => {
-        const reg = new RegExp(word, 'gi');
-        message = message.replace(reg, '***');
-      });
-
-      const randomRot = parseFloat((Math.random() * 3.6 - 1.8).toFixed(1));
-      const isApproved = !window.isAutoModerateEnabled;
-
-      const newWishData = {
-        author: author,
-        role: role,
-        message: message,
-        emoji: selectedEmoji,
-        themeId: selectedThemeId,
-        timestamp: '剛剛',
-        rotation: randomRot,
-        likes: 1,
-        status: isApproved ? 'APPROVED' : 'PENDING',
-        isPinned: false,
-        createdAt: Date.now()
-      };
-
-      try {
-        await addDoc(getWishesCollection(), newWishData);
-        
-        playChimeSound();
-        if (isApproved) {
-          confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, colors: ['#D4AF37', '#F59E0B', '#F43F5E', '#10B981', '#6366F1'] });
-        }
-
-        window.closeSenderModal();
-        document.getElementById('wish-form').reset();
-        window.updateCharCount();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (err) { console.error("Submit failed:", err); }
-    };
-
-    // Simulators
-    window.triggerManualSim = async () => {
-      if (!auth.currentUser) return;
-      const demoPool = [
-        { author: '第10屆系友 志偉', role: '畢業系友', message: '看著教科系邁入30周年，內心滿滿驕傲！祝福母系欣欣向榮！🎓', emoji: '🎉', themeId: 'yellow' },
-        { author: '教育科技碩士班 佳玲', role: '教科在校生', message: '在教科系做研究、學科技教學，每天都很充實！祝教科系 30 歲生日快樂！🎂', emoji: '💡', themeId: 'blue' },
-        { author: '第22屆 冠宇', role: '畢業系友', message: '電腦教室永遠有我們的汗水與笑聲！教科30歲快樂！❤️', emoji: '❤️', themeId: 'pink' }
-      ];
-
-      const item = demoPool[Math.floor(Math.random() * demoPool.length)];
-      const randomRot = parseFloat((Math.random() * 3.6 - 1.8).toFixed(1));
-
-      const simWishData = {
-        ...item, timestamp: '剛剛', rotation: randomRot, likes: Math.floor(Math.random() * 5) + 1,
-        status: window.isAutoModerateEnabled ? 'PENDING' : 'APPROVED', isPinned: false, createdAt: Date.now()
-      };
-
-      try {
-        await addDoc(getWishesCollection(), simWishData);
-        playChimeSound();
-        if (!window.isAutoModerateEnabled) confetti({ particleCount: 45, spread: 50, origin: { y: 0.5 } });
-      } catch (err) { console.error("Simulation failed", err); }
-    };
-
-    window.toggleAutoSim = () => {
-      const btn = document.getElementById('auto-sim-btn');
-      const statusText = document.getElementById('sim-status');
-      if (autoSimInterval) {
-        clearInterval(autoSimInterval);
-        autoSimInterval = null;
-        btn.className = 'flex-1 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1';
-        statusText.innerText = '靜止';
-        statusText.className = 'text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 font-normal';
-      } else {
-        window.triggerManualSim();
-        autoSimInterval = setInterval(window.triggerManualSim, 7000);
-        btn.className = 'flex-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition shadow-xs flex items-center justify-center gap-1';
-        statusText.innerText = '自動模擬中';
-        statusText.className = 'text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold animate-pulse';
-      }
-      lucide.createIcons();
-    };
-
-    // Admin Dashboard
-    window.toggleAdminDrawer = () => {
-      const drawer = document.getElementById('admin-drawer');
-      isAdminOpen = !isAdminOpen;
-      if (isAdminOpen) {
-        drawer.classList.remove('translate-x-full');
-        updateAdminDashboard();
-      } else {
-        drawer.classList.add('translate-x-full');
-      }
-    };
-
-    window.switchAdminTab = (tabName) => {
-      currentAdminTab = tabName;
-      ['moderation', 'stats', 'settings'].forEach(t => {
-        document.getElementById(`admin-tab-${t}`).classList.add('hidden');
-        document.getElementById(`tab-btn-${t}`).className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
-      });
-
-      document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
-      document.getElementById(`tab-btn-${tabName}`).className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
-    };
-
-    window.setAdminStatusFilter = (status) => {
-      currentAdminStatusFilter = status;
-      ['ALL', 'PENDING', 'APPROVED', 'REJECTED'].forEach(st => {
-        const btn = document.getElementById(`admin-st-${st}`);
-        btn.className = (st === status) ? 'px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold' : 'px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600';
-      });
-      renderAdminList();
-    };
-
-    function updateAdminDashboard() {
-      const allList = window.wishes;
-      const cntAll = allList.length;
-      const cntPending = allList.filter(w => w.status === 'PENDING').length;
-      const cntApproved = allList.filter(w => w.status === 'APPROVED').length;
-      const cntRejected = allList.filter(w => w.status === 'REJECTED').length;
-      const totalLikes = allList.reduce((sum, w) => sum + (w.likes || 0), 0);
-      const pinnedCnt = allList.filter(w => w.isPinned).length;
-
-      document.getElementById('cnt-all').innerText = cntAll;
-      document.getElementById('cnt-pending').innerText = cntPending;
-      document.getElementById('cnt-approved').innerText = cntApproved;
-      document.getElementById('cnt-rejected').innerText = cntRejected;
-
-      const badge = document.getElementById('pending-badge');
-      if (cntPending > 0) {
-        badge.innerText = cntPending;
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
-
-      document.getElementById('stat-total').innerText = cntAll;
-      document.getElementById('stat-rate').innerText = cntAll > 0 ? `${Math.round((cntApproved / cntAll) * 100)}%` : '100%';
-      document.getElementById('stat-likes').innerText = totalLikes;
-      document.getElementById('stat-pinned').innerText = pinnedCnt;
-
-      renderRoleStatsChart();
-      renderAdminList();
-    }
-
-    function renderRoleStatsChart() {
-      const container = document.getElementById('role-chart-container');
-      const roles = ['畢業系友', '教科在校生', '系上師長', '貴賓好友'];
-      const total = window.wishes.length || 1;
-
-      container.innerHTML = roles.map(role => {
-        const count = window.wishes.filter(w => w.role === role || (role === '系上師長' && w.role === '退休師長')).length;
-        const pct = Math.round((count / total) * 100);
-        return `
-          <div>
-            <div class="flex justify-between text-xs text-slate-300 mb-1">
-              <span>${role}</span>
-              <span>${count} 則 (${pct}%)</span>
-            </div>
-            <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-              <div class="bg-gradient-to-r from-amber-500 to-amber-300 h-full transition-all duration-500" style="width: ${pct}%"></div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderAdminList() {
-      const container = document.getElementById('admin-message-list');
-      let filtered = window.wishes;
-
-      if (currentAdminStatusFilter !== 'ALL') {
-        filtered = filtered.filter(w => w.status === currentAdminStatusFilter);
-      }
-
-      if (filtered.length === 0) {
-        container.innerHTML = '<div class="text-center py-10 text-slate-500 text-xs">此分類下尚無留言項目</div>';
-        return;
-      }
-
-      container.innerHTML = filtered.map(w => {
-        let statusBadge = '';
-        if (w.status === 'APPROVED') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">已展示</span>';
-        else if (w.status === 'PENDING') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">待審核</span>';
-        else if (w.status === 'REJECTED') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold">已隱藏</span>';
-
-        return `
-          <div class="p-4 rounded-2xl bg-slate-800 border border-slate-700/80 flex flex-col gap-2.5">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-lg">${w.emoji || '🎓'}</span>
-                <span class="font-bold text-sm text-slate-100">${escapeHtml(w.author || '')}</span>
-                <span class="text-[10px] px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded">${escapeHtml(w.role || '')}</span>
-                ${statusBadge}
-                ${w.isPinned ? '<span class="text-[10px] px-1.5 py-0.5 bg-amber-500/30 text-amber-300 rounded flex items-center gap-0.5"><i data-lucide="pin" class="w-2.5 h-2.5"></i> 置頂</span>' : ''}
-              </div>
-              <span class="text-[11px] text-slate-500">${w.timestamp || '剛剛'}</span>
-            </div>
-            <p class="text-xs text-slate-300 font-warm leading-relaxed bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/50">
-              ${escapeHtml(w.message || '')}
-            </p>
-            <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-700/50">
-              <div class="flex items-center gap-1.5">
-                ${w.status !== 'APPROVED' ? `<button onclick="setCardStatus('${w.id}', 'APPROVED')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 rounded-lg font-medium transition">展示</button>` : ''}
-                ${w.status !== 'REJECTED' ? `<button onclick="setCardStatus('${w.id}', 'REJECTED')" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 rounded-lg font-medium transition">隱藏</button>` : ''}
-                <button onclick="togglePinCard('${w.id}')" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg font-medium transition">
-                  ${w.isPinned ? '取消置頂' : '設為置頂'}
-                </button>
-              </div>
-              <div class="flex items-center gap-2">
-                <button onclick="openEditModal('${w.id}')" class="text-slate-400 hover:text-amber-400 p-1" title="編輯內容"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                <button onclick="deleteCard('${w.id}')" class="text-slate-400 hover:text-rose-400 p-1" title="永久刪除"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      lucide.createIcons();
-    }
-
-    window.setCardStatus = async (id, status) => {
-      if (!auth.currentUser) return;
-      try { await updateDoc(getWishDoc(id), { status: status }); } catch (e) {}
-    };
-
-    window.togglePinCard = async (id) => {
-      if (!auth.currentUser) return;
-      const card = window.wishes.find(w => w.id === id);
-      if (card) {
-        try { await updateDoc(getWishDoc(id), { isPinned: !card.isPinned }); } catch (e) {}
-      }
-    };
-
-    window.batchApprovePending = async () => {
-      if (!auth.currentUser) return;
-      const pendingList = window.wishes.filter(w => w.status === 'PENDING');
-      for (const item of pendingList) {
-        try { await updateDoc(getWishDoc(item.id), { status: 'APPROVED' }); } catch(e) {}
-      }
-    };
-
-    window.deleteCard = async (id) => {
-      if (!auth.currentUser) return;
-      try { await deleteDoc(getWishDoc(id)); } catch (e) {}
-    };
-
-    window.openEditModal = (id) => {
-      const card = window.wishes.find(w => w.id === id);
-      if (!card) return;
-      document.getElementById('edit-id').value = card.id;
-      document.getElementById('edit-author').value = card.author || '';
-      document.getElementById('edit-message').value = card.message || '';
-      document.getElementById('edit-modal').classList.remove('hidden');
-    };
-
-    window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
-
-    window.saveEditCard = async () => {
-      if (!auth.currentUser) return;
-      const id = document.getElementById('edit-id').value;
-      const author = document.getElementById('edit-author').value.trim();
-      const message = document.getElementById('edit-message').value.trim();
-
-      if (id) {
-        try { await updateDoc(getWishDoc(id), { author, message }); } catch (e) {}
-      }
-      window.closeEditModal();
-    };
-
-    window.toggleAutoModerateSetting = async (checked) => {
-      window.isAutoModerateEnabled = checked;
-      if (!auth.currentUser) return;
-      try {
-        await setDoc(getSettingsDoc(), {
-          autoModerate: checked,
-          sensitiveWords: document.getElementById('setting-sensitive-words')?.value || '廣告, 詐騙, 買粉'
-        }, { merge: true });
-      } catch (e) {}
-    };
-
-    // Standard Modals
-    window.openSenderModal = () => document.getElementById('sender-modal').classList.remove('hidden');
-    window.closeSenderModal = () => document.getElementById('sender-modal').classList.add('hidden');
-
-    window.openMagnifyModal = (id) => {
-      const item = window.wishes.find(w => w.id === id);
-      if (!item) return;
-
-      const modal = document.getElementById('magnify-modal');
-      const box = document.getElementById('magnify-card-content');
-      const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
-
-      box.className = `relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
-      document.getElementById('mag-avatar').innerText = item.emoji || '🎓';
-      document.getElementById('mag-name').innerText = item.author || '';
-      
-      const roleBadge = document.getElementById('mag-role');
-      roleBadge.innerText = item.role || '系友';
-      roleBadge.className = `text-xs px-2.5 py-0.5 rounded-md font-bold ${theme.badgeBg} ${theme.badgeText}`;
-
-      document.getElementById('mag-time').innerText = item.timestamp || '剛剛';
-      document.getElementById('mag-text').innerText = item.message || '';
-
-      const likeBtn = document.getElementById('mag-like-btn');
-      document.getElementById('mag-like-count').innerText = `送上祝福 (${item.likes || 0})`;
-      likeBtn.onclick = (e) => {
-        window.likeCard(e, item.id);
-        document.getElementById('mag-like-count').innerText = `送上祝福 (${(item.likes || 0) + 1})`;
-      };
-
-      modal.classList.remove('hidden');
-      lucide.createIcons();
-    };
-
-    window.closeMagnifyModal = () => document.getElementById('magnify-modal').classList.add('hidden');
-
-    window.toggleFullScreen = () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-      }
-    };
-
-    window.toggleAutoScroll = () => {
-      isAutoScrolling = !isAutoScrolling;
-      const btnIcon = document.getElementById('autoscroll-icon');
-      const btnLabel = document.getElementById('autoscroll-label');
-
-      if (isAutoScrolling) {
-        btnIcon.setAttribute('data-lucide', 'pause');
-        btnLabel.innerText = '暫停輪播';
-        clearInterval(autoScrollInterval);
-        let direction = 1;
-        autoScrollInterval = setInterval(() => {
-          window.scrollBy({ top: 1.5 * direction, behavior: 'smooth' });
-          if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 8) {
-            direction = -1;
-          } else if (window.scrollY <= 0) {
-            direction = 1;
-          }
-        }, 55);
-      } else {
-        btnIcon.setAttribute('data-lucide', 'play');
-        btnLabel.innerText = '舞台輪播';
-        clearInterval(autoScrollInterval);
-      }
-      lucide.createIcons();
-    };
-
-    window.exportWishes = () => {
-      const dataStr = window.wishes.map((w, idx) => `[${idx + 1}] ${w.author} (${w.role}) - 狀態: ${w.status} - 時間: ${w.timestamp}\n${w.message}\n`).join('\n---\n\n');
-      const blob = new Blob([`淡江大學教育科技系 30 周年慶・數位祝福名冊\n匯出時間：${new Date().toLocaleString()}\n\n${dataStr}`], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `淡江教科30周年祝福名冊_${new Date().toISOString().slice(0,10)}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-    };
-
-    function escapeHtml(string) {
-      const div = document.createElement('div');
-      div.innerText = string;
-      return div.innerHTML;
-    }
-
-    function initParticles() {
-      const canvas = document.getElementById('ambient-canvas');
-      const ctx = canvas.getContext('2d');
-      let width = canvas.width = window.innerWidth;
-      let height = canvas.height = window.innerHeight;
-
-      window.addEventListener('resize', () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      });
-
-      const particles = Array.from({ length: 35 }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: Math.random() * 3 + 1,
-        dx: (Math.random() - 0.5) * 0.35,
-        dy: (Math.random() - 0.5) * 0.35,
-        alpha: Math.random() * 0.4 + 0.15,
-        color: ['#D4AF37', '#F59E0B', '#E2B870', '#800000', '#10B981'][Math.floor(Math.random() * 5)]
-      }));
-
-      function renderLoop() {
-        ctx.clearRect(0, 0, width, height);
-        particles.forEach(p => {
-          p.x += p.dx;
-          p.y += p.dy;
-          if (p.x < 0) p.x = width;
-          if (p.x > width) p.x = 0;
-          if (p.y < 0) p.y = height;
-          if (p.y > height) p.y = 0;
-
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.globalAlpha = p.alpha;
-          ctx.fill();
-        });
-        ctx.globalAlpha = 1;
-        requestAnimationFrame(renderLoop);
-      }
-      renderLoop();
-    }
-
-    // Startup Execution
-    window.addEventListener('DOMContentLoaded', () => {
-      const sessionAuth = sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
-      isAdminAuthenticated = sessionAuth;
-      updateAdminUI();
-
-      window.setupColorSelector();
-      window.setupEmojiSelector();
-      initQRCodes();
-      initParticles();
-      lucide.createIcons();
-
-      // Trigger Firebase
-      initAuthAndData();
-    });
-
-  </script>
-</body>
-</html>
-  <!-- Lucide Icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- QRCode.js -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Canvas Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
-
-  <!-- Google Fonts: Noto Serif TC, Zen Maru Gothic -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700;900&family=Cinzel:wght@600;800&display=swap" rel="stylesheet">
-
+      </div>
+    </div>
+  </div>
+
+  <!-- QR Code 巨幅投影展示彈窗 -->
+  <div id="qr-modal" class="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-md hidden flex items-center justify-center p-6">
+    <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center relative shadow-2xl animate-popNote">
+      <button onclick="closeQrModal()" class="absolute top-4 right-4 text-stone-400 p-2 bg-stone-100 rounded-full"><i data-lucide="x" class="w-5 h-5"></i></button>
+      <h3 class="text-xl font-bold font-serifTc text-stone-800 mt-2">掃碼送祝福</h3>
+      <p class="text-stone-500 text-xs mt-1 mb-5">免下載App，手機直接留言上牆</p>
+      <div class="p-4 bg-amber-50 rounded-2xl inline-block">
+        <div id="qrcode-large" class="mx-auto flex justify-center"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Javascript 邏輯 (完全本地端 LocalStorage 運作，無需後端) -->
   <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            warm: ['"Zen Maru Gothic"', 'sans-serif'],
-            serifTc: ['"Noto Serif TC"', 'serif'],
-            cinzel: ['"Cinzel"', 'serif'],
-          },
-          colors: {
-            tkGold: '#D4AF37',
-            tkNavy: '#1E293B',
-            tkMaroon: '#800000',
-            warmCream: '#FAF7F0',
-          },
-          keyframes: {
-            floatBadge: {
-              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
-              '50%': { transform: 'translateY(-6px) rotate(1deg)' }
-            },
-            popNote: {
-              '0%': { transform: 'scale(0.85) translateY(24px)', opacity: '0' },
-              '100%': { transform: 'scale(1) translateY(0)', opacity: '1' }
-            }
-          },
-          animation: {
-            floatBadge: 'floatBadge 4.5s ease-in-out infinite',
-            popNote: 'popNote 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards'
-          }
-        }
-      }
-    }
-  </script>
-
-  <style>
-    body {
-      font-family: 'Zen Maru Gothic', sans-serif;
-      background: radial-gradient(circle at 15% 15%, #FFFDF8 0%, #FBF6EC 45%, #F4ECE1 100%);
-      overflow-x: hidden;
-    }
-    
-    /* 便利貼 / 拍立得紙感卡片 */
-    .wishing-card {
-      transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-      position: relative;
-    }
-    .wishing-card:hover {
-      transform: translateY(-6px) scale(1.02) !important;
-      box-shadow: 0 20px 30px -10px rgba(138, 100, 60, 0.2);
-      z-index: 25;
-    }
-
-    /* 置頂卡片加亮效果 */
-    .pinned-card {
-      box-shadow: 0 0 0 3px #D4AF37, 0 12px 24px -6px rgba(212, 175, 55, 0.35);
-    }
-
-    /* 紙膠帶裝飾 */
-    .washi-tape {
-      position: absolute;
-      top: -12px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 75px;
-      height: 22px;
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(3px);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-      border-left: 3px dashed rgba(180, 150, 120, 0.4);
-      border-right: 3px dashed rgba(180, 150, 120, 0.4);
-      border-radius: 2px;
-      z-index: 10;
-    }
-
-    /* 金色置頂膠帶 */
-    .washi-tape-gold {
-      background: rgba(254, 240, 138, 0.85);
-      border-left: 3px dashed rgba(180, 130, 40, 0.5);
-      border-right: 3px dashed rgba(180, 130, 40, 0.5);
-    }
-
-    #ambient-canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      pointer-events: none;
-      z-index: 0;
-    }
-
-    /* 滾動條美化 */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-    ::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.03);
-    }
-    ::-webkit-scrollbar-thumb {
-      background: rgba(212, 175, 55, 0.4);
-      border-radius: 99px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: rgba(212, 175, 55, 0.8);
-    }
-  </style>
-</head>
-<body class="text-stone-700 min-h-screen relative flex flex-col selection:bg-amber-100 selection:text-amber-900">
-
-  <!-- 背景動態金色微光粒子 -->
-  <canvas id="ambient-canvas"></canvas>
-
-  <!-- 頂部頁眉 navigation -->
-  <header class="relative z-20 px-4 md:px-6 py-4 border-b border-amber-900/10 bg-white/80 backdrop-blur-md shadow-sm">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-      
-      <!-- 主題標題與 30 週年專屬徽章 -->
-      <div class="flex items-center gap-3.5">
-        <!-- 30週年紀念徽章 -->
-        <div class="relative animate-floatBadge">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex flex-col items-center justify-center text-white shadow-lg shadow-amber-600/25 border-2 border-amber-200 cursor-pointer" onclick="handleBadgeClick()">
-            <span class="font-cinzel text-xs font-semibold leading-none tracking-widest text-amber-200">TKU</span>
-            <span class="font-cinzel text-2xl font-black leading-tight text-white drop-shadow">30</span>
-            <span class="text-[9px] font-bold tracking-tighter text-amber-100">ANNIVERSARY</span>
-          </div>
-          <div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-rose-500 border border-white text-[10px] text-white flex items-center justify-center font-bold">
-            🎓
-          </div>
-        </div>
-
-        <div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-bold border border-amber-200/80">
-              淡江大學教育科技學系
-            </span>
-            <span class="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
-              <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              跨裝置即時雲端同步
-            </span>
-          </div>
-          <h1 class="text-xl md:text-2xl lg:text-3xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">
-            30 周年慶・數位祝福留言牆
-          </h1>
-          <p class="text-xs md:text-sm text-stone-500 font-medium mt-0.5">
-            「三十而立・點亮教科・智慧傳承・創思未來」
-          </p>
-        </div>
-      </div>
-
-      <!-- 頂部操作與導覽按鈕 -->
-      <div class="flex items-center gap-2.5 flex-wrap">
-        <!-- 留言統計 -->
-        <div class="px-3.5 py-2 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-center gap-2 text-stone-700 shadow-xs">
-          <i data-lucide="sparkles" class="w-4 h-4 text-amber-600"></i>
-          <span class="text-xs font-medium">匯聚祝福：</span>
-          <span id="wish-counter" class="text-base font-black text-amber-900 font-mono">0</span>
-          <span class="text-xs font-medium">篇</span>
-        </div>
-
-        <!-- 舞台自動輪播滾動 -->
-        <button onclick="toggleAutoScroll()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 hover:border-amber-400 hover:bg-amber-50 text-stone-700 transition flex items-center gap-1.5 shadow-xs">
-          <i data-lucide="play" id="autoscroll-icon" class="w-3.5 h-3.5 text-amber-600"></i>
-          <span id="autoscroll-label">舞台輪播</span>
-        </button>
-
-        <!-- 留下祝福開關 -->
-        <button onclick="openSenderModal()" class="px-4 py-2 rounded-xl text-xs md:text-sm font-bold bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white shadow-md shadow-amber-600/25 transition flex items-center gap-1.5 active:scale-95">
-          <i data-lucide="edit-3" class="w-4 h-4"></i>
-          <span>送上祝福</span>
-        </button>
-
-        <!-- 管理員未解鎖時顯示的密碼登入按鈕 -->
-        <button id="admin-unlock-btn" onclick="promptAdminPassword()" class="px-3 py-2 rounded-xl text-xs font-bold bg-stone-100 hover:bg-amber-100 text-stone-600 hover:text-amber-900 transition flex items-center gap-1 shadow-xs" title="主辦單位後台管理驗證">
-          <i data-lucide="key-round" class="w-3.5 h-3.5 text-amber-600"></i>
-          <span>管理員驗證</span>
-        </button>
-
-        <!-- 後台管理開關 (管理者登入後顯示) -->
-        <button id="admin-portal-btn" onclick="toggleAdminDrawer()" class="hidden px-3.5 py-2 rounded-xl text-xs md:text-sm font-bold bg-slate-800 hover:bg-slate-900 text-amber-300 shadow-md transition flex items-center gap-1.5 relative border border-amber-500/30">
-          <i data-lucide="shield-check" class="w-4 h-4 text-amber-400"></i>
-          <span>管理中心</span>
-          <span id="pending-badge" class="hidden absolute -top-1.5 -right-1.5 px-1.5 py-0.5 bg-rose-500 text-white text-[10px] font-black rounded-full animate-bounce">0</span>
-        </button>
-
-        <!-- 投影全螢幕按鈕 -->
-        <button onclick="toggleFullScreen()" title="切換投影全螢幕" class="p-2 rounded-xl text-stone-600 bg-white border border-stone-200 hover:bg-amber-50 transition shadow-xs">
-          <i data-lucide="maximize" class="w-4 h-4"></i>
-        </button>
-      </div>
-
-    </div>
-  </header>
-
-  <!-- 搜尋與身分篩選欄 (Live Stream Bar) -->
-  <section class="relative z-10 max-w-7xl mx-auto w-full px-5 pt-4 flex flex-wrap items-center justify-between gap-3">
-    <!-- 身分 Filter Buttons -->
-    <div class="flex items-center gap-1.5 flex-wrap text-xs" id="role-filter-group">
-      <button onclick="setRoleFilter('ALL')" class="role-btn px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 shadow-xs" data-role="ALL">全部留言</button>
-      <button onclick="setRoleFilter('畢業系友')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="畢業系友">🎓 畢業系友</button>
-      <button onclick="setRoleFilter('教科在校生')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="教科在校生">🎒 在校學生</button>
-      <button onclick="setRoleFilter('系上師長')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="系上師長">📚 師長教職</button>
-      <button onclick="setRoleFilter('貴賓好友')" class="role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition" data-role="貴賓好友">🤝 貴賓好友</button>
-    </div>
-
-    <!-- 搜尋框 -->
-    <div class="relative flex-1 max-w-xs">
-      <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400"></i>
-      <input type="text" id="live-search-input" oninput="handleSearch(this.value)" placeholder="搜尋發言人或關鍵字..." class="w-full text-xs pl-9 pr-3 py-2 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/40 bg-white/90 shadow-xs" />
-    </div>
-  </section>
-
-  <!-- 主要內容區 -->
-  <main class="relative z-10 flex-1 p-5 md:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
-    
-    <!-- 祝福卡片流 / 網格 -->
-    <section class="flex-1">
-      <div id="wishes-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max transition-all">
-        <!-- 卡片由 JavaScript 動態填入 -->
-      </div>
-
-      <div id="empty-state" class="hidden text-center py-20 bg-white/40 rounded-3xl border border-amber-900/5">
-        <div class="w-20 h-20 mx-auto rounded-full bg-amber-100/80 flex items-center justify-center text-amber-600 mb-3 shadow-inner">
-          <i data-lucide="heart-handshake" class="w-10 h-10"></i>
-        </div>
-        <h3 class="text-xl font-bold text-stone-700 font-serifTc">尚無符合此條件的祝福</h3>
-        <p class="text-stone-400 text-sm mt-1">快點擊右上角「送上祝福」或用手機掃碼留言吧！</p>
-      </div>
-    </section>
-
-    <!-- 投影端右側常駐看板：現場 QR Code 掃描區 -->
-    <aside class="lg:w-80 w-full flex-shrink-0 flex flex-col gap-4">
-      <div class="sticky top-24 bg-white/85 backdrop-blur-md rounded-3xl p-6 border border-amber-900/10 shadow-xl text-center flex flex-col items-center">
-        
-        <!-- 慶典標章 -->
-        <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100/70 text-amber-800 border border-amber-200 mb-3">
-          <i data-lucide="camera" class="w-3.5 h-3.5 text-amber-700"></i> 手機掃碼即刻上牆
-        </span>
-
-        <h2 class="text-lg font-bold text-stone-800 font-serifTc">淡江教科 30th 祝願集結</h2>
-        <p class="text-xs text-stone-500 mt-1 mb-4 leading-relaxed">
-          相機對準條碼即可留言<br/>分享那些年在淡江的熱血與感動
-        </p>
-
-        <!-- QR Code 容器 (點擊可放大展示) -->
-        <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative" onclick="openQrModal()" title="點擊放大 QR Code 供全場掃描">
-          <div id="qrcode-display" class="flex justify-center items-center"></div>
-          <div class="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 rounded-2xl flex items-center justify-center text-white text-xs font-semibold transition backdrop-blur-xs">
-            <span class="flex items-center gap-1.5 bg-stone-900/90 px-3 py-1.5 rounded-xl shadow-lg">
-              <i data-lucide="maximize-2" class="w-4 h-4 text-amber-400"></i> 點擊放大條碼
-            </span>
-          </div>
-        </div>
-
-        <p class="text-[11px] text-stone-400 mt-3 flex items-center gap-1">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i> 免下載 App・同步大螢幕
-        </p>
-
-        <!-- 現場演示即時模擬模組 -->
-        <div class="w-full mt-4 pt-4 border-t border-stone-100 flex flex-col gap-2.5">
-          <div class="flex items-center justify-between text-xs text-stone-600 font-bold">
-            <span class="flex items-center gap-1"><i data-lucide="play-circle" class="w-3.5 h-3.5 text-amber-600"></i> 現場模擬祝賀聲浪</span>
-            <span id="sim-status" class="text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 font-normal">靜止</span>
-          </div>
-          
-          <div class="flex items-center gap-2">
-            <button onclick="triggerManualSim()" class="flex-1 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1">
-              <i data-lucide="plus-circle" class="w-3.5 h-3.5"></i> 手動觸發 1 則
-            </button>
-            <button id="auto-sim-btn" onclick="toggleAutoSim()" class="flex-1 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1">
-              <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-600"></i> 自動生成
-            </button>
-          </div>
-        </div>
-
-        <!-- 現場設定與匯出 -->
-        <div class="w-full mt-3 pt-3 border-t border-stone-100 flex flex-col gap-2">
-          <div class="flex items-center justify-between text-xs text-stone-500">
-            <span>現場設定</span>
-            <button onclick="exportWishes()" class="text-amber-700 hover:text-amber-800 font-medium flex items-center gap-1">
-              <i data-lucide="download" class="w-3 h-3"></i> 匯出名冊
-            </button>
-          </div>
-          <div class="flex gap-1.5">
-            <input id="custom-qr-url" type="text" class="w-full text-xs px-2.5 py-1.5 rounded-lg border border-stone-200 focus:outline-none focus:ring-1 focus:ring-amber-500 bg-stone-50" placeholder="活動網址" />
-            <button onclick="updateQrUrl()" class="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 rounded-lg text-xs font-medium transition text-stone-700">更新</button>
-          </div>
-        </div>
-      </div>
-    </aside>
-
-  </main>
-
-  <!-- ========================================== -->
-  <!-- 抽屜式「後台管理中心」 Drawer & Portal      -->
-  <!-- ========================================== -->
-  <div id="admin-drawer" class="fixed inset-y-0 right-0 z-50 w-full max-w-2xl bg-slate-900 text-slate-100 shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out flex flex-col">
-    
-    <!-- 後台 Top Bar -->
-    <div class="p-5 bg-slate-800/90 border-b border-slate-700 flex items-center justify-between backdrop-blur">
-      <div class="flex items-center gap-2.5">
-        <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
-          <i data-lucide="sliders" class="w-5 h-5"></i>
-        </div>
-        <div>
-          <h2 class="font-bold text-lg text-white font-serifTc">教科 30 周年・現場留言管理中心</h2>
-          <p class="text-xs text-slate-400">實時審核、置頂控制、內容過濾與數據統計</p>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <button onclick="lockAdminSession()" class="px-2.5 py-1.5 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-bold border border-rose-500/30 transition flex items-center gap-1" title="登出管理員身分">
-          <i data-lucide="lock" class="w-3.5 h-3.5"></i> 登出後台
-        </button>
-        <button onclick="toggleAdminDrawer()" class="p-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-700 transition">
-          <i data-lucide="x" class="w-6 h-6"></i>
-        </button>
-      </div>
-    </div>
-
-    <!-- 後台導覽 Tabs -->
-    <div class="flex border-b border-slate-800 bg-slate-900/80 px-5 gap-6">
-      <button id="tab-btn-moderation" onclick="switchAdminTab('moderation')" class="py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5">
-        <i data-lucide="check-square" class="w-4 h-4"></i> 留言審核與管理
-      </button>
-      <button id="tab-btn-stats" onclick="switchAdminTab('stats')" class="py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5">
-        <i data-lucide="bar-chart-2" class="w-4 h-4"></i> 數據統計面板
-      </button>
-      <button id="tab-btn-settings" onclick="switchAdminTab('settings')" class="py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5">
-        <i data-lucide="settings" class="w-4 h-4"></i> 審核機制設定
-      </button>
-    </div>
-
-    <!-- 後台內容區塊 (可捲動) -->
-    <div class="p-5 flex-1 overflow-y-auto space-y-6">
-      
-      <!-- TAB 1: 留言審核與管理 -->
-      <div id="admin-tab-moderation" class="space-y-4">
-        <!-- 狀態過濾與一鍵操作 -->
-        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/60 p-3 rounded-2xl border border-slate-700/60">
-          <div class="flex items-center gap-1 text-xs">
-            <button id="admin-st-ALL" onclick="setAdminStatusFilter('ALL')" class="px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold">全部 (<span id="cnt-all">0</span>)</button>
-            <button id="admin-st-PENDING" onclick="setAdminStatusFilter('PENDING')" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">待審核 (<span id="cnt-pending">0</span>)</button>
-            <button id="admin-st-APPROVED" onclick="setAdminStatusFilter('APPROVED')" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">已展示 (<span id="cnt-approved">0</span>)</button>
-            <button id="admin-st-REJECTED" onclick="setAdminStatusFilter('REJECTED')" class="px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600">已隱藏 (<span id="cnt-rejected">0</span>)</button>
-          </div>
-
-          <button onclick="batchApprovePending()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-1 shadow-sm">
-            <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> 一鍵核准待審項目
-          </button>
-        </div>
-
-        <!-- 管理列表清單 -->
-        <div id="admin-message-list" class="space-y-3">
-          <!-- JS 動態渲染卡片列表 -->
-        </div>
-      </div>
-
-      <!-- TAB 2: 數據統計面板 -->
-      <div id="admin-tab-stats" class="hidden space-y-5">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700/70">
-            <span class="text-xs text-slate-400">總接收留言數</span>
-            <div id="stat-total" class="text-2xl font-bold text-amber-400 mt-1">0</div>
-          </div>
-          <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700/70">
-            <span class="text-xs text-slate-400">審核通過率</span>
-            <div id="stat-rate" class="text-2xl font-bold text-emerald-400 mt-1">0%</div>
-          </div>
-          <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700/70">
-            <span class="text-xs text-slate-400">愛心互動總數</span>
-            <div id="stat-likes" class="text-2xl font-bold text-rose-400 mt-1">0</div>
-          </div>
-          <div class="p-4 bg-slate-800 rounded-2xl border border-slate-700/70">
-            <span class="text-xs text-slate-400">當前置頂卡片</span>
-            <div id="stat-pinned" class="text-2xl font-bold text-sky-400 mt-1">0</div>
-          </div>
-        </div>
-
-        <!-- 身分占比視覺化 Bar -->
-        <div class="p-5 bg-slate-800 rounded-2xl border border-slate-700/70">
-          <h4 class="text-sm font-bold text-white mb-3">留言身分組成分析</h4>
-          <div id="role-chart-container" class="space-y-3">
-            <!-- JS 動態產生條狀圖 -->
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 3: 審核機制設定 -->
-      <div id="admin-tab-settings" class="hidden space-y-5">
-        <div class="p-5 bg-slate-800 rounded-2xl border border-slate-700/70 space-y-4">
-          <h4 class="text-sm font-bold text-amber-400 border-b border-slate-700 pb-2">現場顯示防護機制</h4>
-          
-          <div class="flex items-center justify-between">
-            <div>
-              <div class="text-sm font-bold text-slate-200">開啟「先審後顯」模式</div>
-              <p class="text-xs text-slate-400 mt-0.5">開啟後，民眾留言需經由後台人員審核點擊「展示」後才會顯示在大螢幕。</p>
-            </div>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" id="setting-auto-moderate" onchange="toggleAutoModerateSetting(this.checked)" class="sr-only peer">
-              <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500"></div>
-            </label>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-300 mb-1.5">敏感詞自動過濾（以逗號分隔）</label>
-            <input type="text" id="setting-sensitive-words" value="廣告, 詐騙, 買粉, 政治" class="w-full text-xs p-3 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500" />
-            <p class="text-[11px] text-slate-500 mt-1">包含上述詞彙的留言將自動被替換為 *** 符號。</p>
-          </div>
-
-          <div class="flex items-center justify-between pt-2">
-            <span class="text-xs text-slate-300">新留言提示音效</span>
-            <input type="checkbox" id="setting-sound" checked class="w-4 h-4 accent-amber-500 rounded">
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 管理員密碼輸入 Modal -->
-  <div id="password-modal" class="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 text-slate-100 rounded-3xl p-6 max-w-sm w-full shadow-2xl relative border border-slate-700 text-center animate-popNote">
-      <div class="w-12 h-12 rounded-2xl bg-amber-500/20 text-amber-400 flex items-center justify-center mx-auto mb-3 border border-amber-500/30">
-        <i data-lucide="shield-alert" class="w-6 h-6"></i>
-      </div>
-      <h3 class="text-lg font-bold text-white font-serifTc">後台管理員身份驗證</h3>
-      <p class="text-xs text-slate-400 mt-1 mb-4">請輸入淡江教科 30 周年工作人員管理密碼</p>
-      
-      <form onsubmit="handlePasswordSubmit(event)" class="space-y-3">
-        <input type="password" id="admin-pass-input" placeholder="請輸入密碼 (預設: tku30)" class="w-full text-center text-sm px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-amber-300 focus:outline-none focus:border-amber-500 font-mono tracking-widest placeholder:tracking-normal placeholder:text-slate-500" required />
-        <p id="pass-error-msg" class="text-xs text-rose-400 hidden font-bold">密碼錯誤，請重新輸入！</p>
-        
-        <div class="flex gap-2 pt-2">
-          <button type="button" onclick="closePasswordModal()" class="flex-1 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition">取消</button>
-          <button type="submit" class="flex-1 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold transition">驗證登入</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- 卡片編輯 Modal -->
-  <div id="edit-modal" class="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-md hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 text-slate-100 rounded-3xl p-6 max-w-md w-full shadow-2xl relative border border-slate-700 animate-popNote">
-      <h3 class="text-base font-bold text-white font-serifTc mb-4 flex items-center gap-2">
-        <i data-lucide="edit-3" class="w-4 h-4 text-amber-400"></i> 編輯留言內容
-      </h3>
-      <input type="hidden" id="edit-id" />
-      <div class="space-y-3 text-xs">
-        <div>
-          <label class="block text-slate-400 mb-1">發言人姓名 / 暱稱</label>
-          <input type="text" id="edit-author" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500" />
-        </div>
-        <div>
-          <label class="block text-slate-400 mb-1">祝福內文</label>
-          <textarea id="edit-message" rows="4" class="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-xl text-slate-200 focus:outline-none focus:border-amber-500 font-warm"></textarea>
-        </div>
-      </div>
-      <div class="flex justify-end gap-2 mt-5">
-        <button onclick="closeEditModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition">取消</button>
-        <button onclick="saveEditCard()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-xs font-bold transition">儲存修改</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 卡片放大檢視彈窗 -->
-  <div id="magnify-modal" class="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all transform animate-popNote" id="magnify-card-content">
-      <div class="washi-tape"></div>
-      <button onclick="closeMagnifyModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-black/5 transition">
-        <i data-lucide="x" class="w-6 h-6"></i>
-      </button>
-
-      <div class="flex items-center gap-3.5 mb-4">
-        <span id="mag-avatar" class="w-12 h-12 rounded-2xl text-2xl flex items-center justify-center bg-white/80 shadow-xs border border-black/5"></span>
-        <div>
-          <div class="flex items-center gap-2">
-            <h4 id="mag-name" class="text-xl font-bold text-stone-800 font-serifTc"></h4>
-            <span id="mag-role" class="text-xs px-2 py-0.5 rounded-md font-bold"></span>
-          </div>
-          <span id="mag-time" class="text-xs text-stone-500"></span>
-        </div>
-      </div>
-
-      <div class="p-4 bg-white/60 rounded-2xl border border-black/5 mb-4">
-        <p id="mag-text" class="text-stone-800 text-lg leading-relaxed font-warm whitespace-pre-wrap"></p>
-      </div>
-
-      <div class="flex justify-end gap-2">
-        <button id="mag-like-btn" class="px-4 py-2 rounded-xl bg-white/90 hover:bg-white text-rose-600 font-bold text-sm shadow-xs border border-rose-100 flex items-center gap-1.5 transition">
-          <i data-lucide="heart" class="w-4 h-4 fill-rose-500 text-rose-500"></i>
-          <span id="mag-like-count">送上溫暖愛心</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- QR Code 巨幅投影展示彈窗 -->
-  <div id="qr-modal" class="fixed inset-0 z-50 bg-stone-950/70 backdrop-blur-md hidden flex items-center justify-center p-6">
-    <div class="bg-white rounded-3xl p-8 max-w-md w-full text-center relative shadow-2xl animate-popNote border-4 border-amber-200">
-      <button onclick="closeQrModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-700 p-2 rounded-full hover:bg-stone-100 transition">
-        <i data-lucide="x" class="w-6 h-6"></i>
-      </button>
-      
-      <div class="w-14 h-14 rounded-2xl bg-amber-100 text-amber-800 flex items-center justify-center mx-auto mb-3">
-        <i data-lucide="qr-code" class="w-8 h-8"></i>
-      </div>
-      <h3 class="text-2xl font-bold font-serifTc text-stone-800">淡江教科 30 周年・現場留言</h3>
-      <p class="text-stone-500 text-sm mt-1 mb-6">歡迎系友、在校生、師長拿起手機掃描條碼</p>
-      
-      <div class="p-5 bg-amber-50/50 border border-amber-200 rounded-3xl inline-block shadow-inner">
-        <div id="qrcode-large" class="mx-auto flex justify-center"></div>
-      </div>
-      
-      <div class="mt-6">
-        <button onclick="closeQrModal()" class="px-8 py-2.5 rounded-xl bg-stone-800 hover:bg-stone-900 text-white font-bold text-sm transition">
-          返回祝福牆
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 參與者手機掃碼留言互動視窗 -->
-  <div id="sender-modal" class="fixed inset-0 z-50 bg-stone-900/50 backdrop-blur-sm hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-    <div class="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto animate-popNote border border-amber-900/10">
-      
-      <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-4 sm:hidden"></div>
-      
-      <div class="flex items-center justify-between pb-3 border-b border-stone-100">
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-700">
-            <i data-lucide="graduation-cap" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <h3 class="font-bold text-stone-800 text-base font-serifTc">送上教科 30 周年祝福</h3>
-            <p class="text-[11px] text-stone-400">三十而立，留下您與教科系的專屬回憶</p>
-          </div>
-        </div>
-        <button onclick="closeSenderModal()" class="text-stone-400 hover:text-stone-600 p-1.5 rounded-full hover:bg-stone-100 transition">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <!-- 留言表單 -->
-      <form id="wish-form" onsubmit="handleFormSubmit(event)" class="space-y-4 mt-4">
-        
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <!-- 暱稱 / 姓名 -->
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">您的姓名 / 暱稱 <span class="text-rose-500">*</span></label>
-            <input type="text" id="input-author" required maxlength="16" placeholder="如：第15屆 宜君、阿翔" class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50" />
-          </div>
-
-          <!-- 身分 / 角色選單 -->
-          <div>
-            <label class="block text-xs font-bold text-stone-700 mb-1">您的身分 <span class="text-rose-500">*</span></label>
-            <select id="input-role" required class="w-full text-sm px-3.5 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50">
-              <option value="畢業系友">🎓 畢業系友</option>
-              <option value="教科在校生">🎒 教科在校生</option>
-              <option value="系上師長">📚 系上師長 / 助教</option>
-              <option value="退休師長">🌟 退休教職員</option>
-              <option value="貴賓好友">🤝 友系 / 貴賓好友</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- 心情 Emoji 選擇 -->
-        <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1.5">選擇代表圖示</label>
-          <div class="grid grid-cols-8 gap-1.5" id="emoji-selector"></div>
-        </div>
-
-        <!-- 便利貼底色選擇 -->
-        <div>
-          <label class="block text-xs font-bold text-stone-700 mb-1.5">小卡色調</label>
-          <div class="flex items-center gap-3" id="color-selector"></div>
-        </div>
-
-        <!-- 祝福內容 -->
-        <div>
-          <div class="flex justify-between items-center mb-1">
-            <label class="text-xs font-bold text-stone-700">祝福或回憶留言 <span class="text-rose-500">*</span></label>
-            <span id="char-count" class="text-[11px] text-stone-400">0/150</span>
-          </div>
-          <textarea id="input-message" required maxlength="150" rows="3" placeholder="想對教科系、系上老師或同學們說的話..." class="w-full text-sm p-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 bg-stone-50/50 font-warm" oninput="updateCharCount()"></textarea>
-        </div>
-
-        <!-- 教科 30 週年專屬快捷錦囊 -->
-        <div>
-          <label class="block text-[11px] font-semibold text-stone-400 mb-1.5 flex items-center gap-1">
-            <i data-lucide="zap" class="w-3 h-3 text-amber-500"></i> 快速套用教科專屬祝福：
-          </label>
-          <div class="flex flex-wrap gap-1.5">
-            <button type="button" onclick="applyPreset('祝淡江教科系30週年快樂！感恩師長的啟蒙，願教科繼續璀璨耀眼！✨🎓')" class="text-xs px-2.5 py-1 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200/60 transition">🎂 祝教科30生日快樂</button>
-            <button type="button" onclick="applyPreset('回想起在電腦教室熬夜做專題的日子，教科永遠是最溫暖的家！❤️')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">💡 電腦教室回憶</button>
-            <button type="button" onclick="applyPreset('三十而立・智慧領航！祝福教科系在AI教育科技新浪潮中繼續引領未來！🚀')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">🚀 邁向AI智慧未來</button>
-            <button type="button" onclick="applyPreset('身為教科人，終生教科人！祝系運昌隆、桃李滿天下！🌱')" class="text-xs px-2.5 py-1 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 transition">🌟 桃李滿天下</button>
-          </div>
-        </div>
-
-        <!-- 送出按鈕 -->
-        <button type="submit" class="w-full py-3 bg-gradient-to-r from-amber-600 via-amber-700 to-amber-800 hover:from-amber-700 hover:to-amber-900 active:scale-[0.98] text-white font-bold rounded-xl shadow-lg shadow-amber-700/20 transition flex items-center justify-center gap-2 mt-4">
-          <i data-lucide="send" class="w-4 h-4"></i>
-          <span>送上大螢幕祝賀</span>
-        </button>
-      </form>
-
-    </div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { 
-      getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Setup provided environment variables
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-tku-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' 
-      ? JSON.parse(__firebase_config) 
-      : {}; 
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-
-    // Strict Paths Requirement
-    // Public Data (Sharing with other users)
-    const getWishesCollection = () => collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
-    const getWishDoc = (docId) => doc(db, 'artifacts', appId, 'public', 'data', 'wishes', docId);
-    const getSettingsDoc = () => doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
-
-    // Make global variables for interactions inside vanilla JS
-    window.wishes = [];
-    window.isAutoModerateEnabled = false;
-
-    // Constants
-    const ADMIN_SESSION_KEY = 'tku_et_30th_admin_authed';
-    const VALID_PASSWORDS = ['tku30'];
-
+    // 卡片主題色調
     const CARD_THEMES = [
       { id: 'yellow', name: '暖杏黃', bg: 'bg-[#FEF7D8]', border: 'border-[#EEDFA3]', text: 'text-amber-950', badgeBg: 'bg-amber-200/70', badgeText: 'text-amber-900' },
       { id: 'pink', name: '淡櫻粉', bg: 'bg-[#FCE7E9]', border: 'border-[#EFC4C9]', text: 'text-rose-950', badgeBg: 'bg-rose-200/70', badgeText: 'text-rose-900' },
@@ -2135,803 +336,227 @@
       { id: 'blue', name: '晨曦藍', bg: 'bg-[#E3F2FD]', border: 'border-[#BEDCF5]', text: 'text-sky-950', badgeBg: 'bg-sky-200/70', badgeText: 'text-sky-900' },
       { id: 'purple', name: '薰衣紫', bg: 'bg-[#EFEAFF]', border: 'border-[#D9CDF7]', text: 'text-purple-950', badgeBg: 'bg-purple-200/70', badgeText: 'text-purple-900' }
     ];
-
     const EMOJIS = ['🎓', '🎂', '✨', '❤️', '🚀', '🌱', '🎉', '💡'];
-
-    // State Variables
+    
+    let wishes = [];
     let selectedEmoji = '🎓';
     let selectedThemeId = 'yellow';
-    let isAutoScrolling = false;
-    let autoScrollInterval = null;
     let currentRoleFilter = 'ALL';
     let currentSearchKeyword = '';
-    let isAdminOpen = false;
-    let isAdminAuthenticated = false;
-    let currentAdminTab = 'moderation';
-    let currentAdminStatusFilter = 'ALL';
-    let autoSimInterval = null;
-    let badgeClickCount = 0;
-    let badgeClickTimer = null;
+    let autoScrollInterval = null;
 
-    // Authentication and DB Listener
-    async function initAuthAndData() {
-      try {
-        // Authenticate FIRST (Rule #3)
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-          await signInAnonymously(auth);
-        }
-
-        if (!auth.currentUser) return;
-
-        // Setup real-time listeners for exact paths
-        onSnapshot(getWishesCollection(), (snapshot) => {
-          const cloudWishes = [];
-          snapshot.forEach((document) => {
-            cloudWishes.push({ id: document.id, ...document.data() });
-          });
-
-          // Sort wishes locally memory-side (No complex queries requirement #2)
-          cloudWishes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-          window.wishes = cloudWishes;
-
-          if (cloudWishes.length === 0 && !window.hasInitializedDefault) {
-            window.hasInitializedDefault = true;
-            seedDefaultWishes();
-            return;
-          }
-
-          renderWishes();
-          updateAdminDashboard();
-        }, (error) => {
-          console.error("Firestore wishes stream error:", error);
-        });
-
-        onSnapshot(getSettingsDoc(), (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            window.isAutoModerateEnabled = !!data.autoModerate;
-            const autoModCheckbox = document.getElementById('setting-auto-moderate');
-            if (autoModCheckbox) autoModCheckbox.checked = window.isAutoModerateEnabled;
-            if (data.sensitiveWords) {
-              const sensInput = document.getElementById('setting-sensitive-words');
-              if (sensInput) sensInput.value = data.sensitiveWords;
-            }
-          }
-        }, (error) => {
-          console.error("Firestore settings stream error:", error);
-        });
-
-      } catch (err) {
-        console.error("Auth / Initialization error:", err);
-      }
-    }
-
-    // Default Wishes Seeder
-    async function seedDefaultWishes() {
-      if (!auth.currentUser) return;
-      const DEFAULT_WISHES = [
-        {
-          author: '第5屆系友 家銘', role: '畢業系友', message: '不敢相信教科系已經 30 歲了！當年坐在電腦教室敲鍵盤的時光歷歷在目。祝教科系 30 週年生日快樂！', emoji: '🎂', themeId: 'yellow', timestamp: '剛剛', rotation: -1.2, likes: 18, status: 'APPROVED', isPinned: true, createdAt: Date.now() - 1000
-        },
-        {
-          author: '大四專題生 庭萱', role: '教科在校生', message: '在教科系四年的學習充滿挑戰與驚喜，祝我們教科系 30 歲生日快樂，也祝我們這屆畢業順利！🎓✨', emoji: '🎓', themeId: 'pink', timestamp: '12分鐘前', rotation: -0.9, likes: 14, status: 'APPROVED', isPinned: false, createdAt: Date.now() - 2000
-        }
-      ];
-
-      for (const wish of DEFAULT_WISHES) {
-        try {
-          await addDoc(getWishesCollection(), wish);
-        } catch(e) {}
-      }
-    }
-
-    // Exported helper methods for inline HTML
-    window.handleBadgeClick = () => {
-      badgeClickCount++;
-      clearTimeout(badgeClickTimer);
-      badgeClickTimer = setTimeout(() => { badgeClickCount = 0; }, 2000);
-
-      if (badgeClickCount >= 5) {
-        badgeClickCount = 0;
-        window.promptAdminPassword();
-      }
-    };
-
-    window.promptAdminPassword = () => {
-      if (isAdminAuthenticated) {
-        window.toggleAdminDrawer();
-        return;
-      }
-      document.getElementById('pass-error-msg').classList.add('hidden');
-      document.getElementById('admin-pass-input').value = '';
-      document.getElementById('password-modal').classList.remove('hidden');
-      setTimeout(() => { document.getElementById('admin-pass-input').focus(); }, 100);
-    };
-
-    window.closePasswordModal = () => document.getElementById('password-modal').classList.add('hidden');
-
-    window.handlePasswordSubmit = (e) => {
-      e.preventDefault();
-      const pwd = document.getElementById('admin-pass-input').value.trim().toLowerCase();
-      if (VALID_PASSWORDS.includes(pwd)) {
-        isAdminAuthenticated = true;
-        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
-        updateAdminUI();
-        window.closePasswordModal();
-        window.toggleAdminDrawer();
-        confetti({ particleCount: 50, spread: 60, origin: { y: 0.2 } });
+    // --- 本地資料庫 LocalStorage 核心邏輯 ---
+    function loadData() {
+      const data = localStorage.getItem('tku30_wishes');
+      if (data) {
+        wishes = JSON.parse(data);
       } else {
-        document.getElementById('pass-error-msg').classList.remove('hidden');
+        // 如果沒資料，給兩筆預設資料
+        wishes = [
+          { id: '1', author: '第5屆系友 家銘', role: '畢業系友', message: '坐在工學大樓電腦教室的時光歷歷在目。祝教科系 30 週年生日快樂！', emoji: '🎂', themeId: 'yellow', timestamp: '剛剛', rotation: -1.2, likes: 12, status: 'APPROVED', isPinned: true },
+          { id: '2', author: '大四專題生 庭萱', role: '教科在校生', message: '在教科系四年的學習充滿挑戰與驚喜，祝教科系 30 歲生日快樂，畢業順利！🎓✨', emoji: '🎓', themeId: 'pink', timestamp: '10分鐘前', rotation: 0.8, likes: 5, status: 'APPROVED', isPinned: false }
+        ];
+        saveData();
       }
-    };
+      renderWishes();
+    }
 
-    window.lockAdminSession = () => {
-      isAdminAuthenticated = false;
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-      updateAdminUI();
-    };
+    function saveData() {
+      localStorage.setItem('tku30_wishes', JSON.stringify(wishes));
+      renderWishes();
+    }
 
-    function updateAdminUI() {
-      const adminBtn = document.getElementById('admin-portal-btn');
-      const unlockBtn = document.getElementById('admin-unlock-btn');
-
-      if (isAdminAuthenticated) {
-        if (adminBtn) adminBtn.classList.remove('hidden');
-        if (unlockBtn) unlockBtn.classList.add('hidden');
-      } else {
-        if (adminBtn) adminBtn.classList.add('hidden');
-        if (unlockBtn) unlockBtn.classList.remove('hidden');
-        if (isAdminOpen) {
-          window.toggleAdminDrawer();
-        }
+    // 監聽其他分頁的變更，達成跨分頁即時同步
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'tku30_wishes') {
+        wishes = JSON.parse(e.newValue || '[]');
+        renderWishes();
       }
+    });
+
+    // --- 畫面渲染與操作 ---
+    function init() {
+      setupColorSelector();
+      setupEmojiSelector();
+      initQRCodes();
+      initParticles();
+      loadData();
+      lucide.createIcons();
     }
 
-    // QR Codes Functionality
-    function initQRCodes() {
-      const url = window.location.href;
-      document.getElementById('custom-qr-url').value = url;
-      generateQRCodes(url);
-    }
-
-    function generateQRCodes(url) {
-      const sideContainer = document.getElementById('qrcode-display');
-      sideContainer.innerHTML = '';
-      new QRCode(sideContainer, { text: url, width: 140, height: 140, colorDark: '#451A03', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
-
-      const largeContainer = document.getElementById('qrcode-large');
-      largeContainer.innerHTML = '';
-      new QRCode(largeContainer, { text: url, width: 240, height: 240, colorDark: '#451A03', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
-    }
-
-    window.updateQrUrl = () => {
-      const input = document.getElementById('custom-qr-url');
-      const val = input.value.trim();
-      if (val) generateQRCodes(val);
-    };
-    
-    window.openQrModal = () => document.getElementById('qr-modal').classList.remove('hidden');
-    window.closeQrModal = () => document.getElementById('qr-modal').classList.add('hidden');
-
-    // Chime Sound Notification (Graceful fallback)
-    function playChimeSound() {
-      const soundEnabled = document.getElementById('setting-sound')?.checked;
-      if (soundEnabled === false) return;
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const now = audioCtx.currentTime;
-        const notes = [1046.50, 1318.51, 1567.98];
-        notes.forEach((freq, idx) => {
-          const osc = audioCtx.createOscillator();
-          const gain = audioCtx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-          gain.gain.setValueAtTime(0.12, now + idx * 0.08);
-          gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.6);
-          osc.connect(gain);
-          gain.connect(audioCtx.destination);
-          osc.start(now + idx * 0.08);
-          osc.stop(now + idx * 0.08 + 0.65);
-        });
-      } catch (e) { /* silent fail */ }
-    }
-
-    // Main Wish Rendering Logic
     function renderWishes() {
       const container = document.getElementById('wishes-container');
       const emptyState = document.getElementById('empty-state');
-      const counter = document.getElementById('wish-counter');
-
-      let visible = window.wishes.filter(w => w.status === 'APPROVED');
-
-      // Manual filtering logic (Rule 2 mandates fetching all, parsing local memory)
-      if (currentRoleFilter !== 'ALL') {
-        visible = visible.filter(w => w.role === currentRoleFilter);
-      }
-
+      
+      let visible = wishes.filter(w => w.status === 'APPROVED');
+      if (currentRoleFilter !== 'ALL') visible = visible.filter(w => w.role === currentRoleFilter);
       if (currentSearchKeyword) {
         const kw = currentSearchKeyword.toLowerCase();
-        visible = visible.filter(w => 
-          (w.author && w.author.toLowerCase().includes(kw)) || 
-          (w.message && w.message.toLowerCase().includes(kw))
-        );
+        visible = visible.filter(w => w.author.toLowerCase().includes(kw) || w.message.toLowerCase().includes(kw));
       }
-
-      // Pin sort
-      visible.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
-
-      counter.innerText = window.wishes.filter(w => w.status === 'APPROVED').length;
+      
+      // 置頂排在前面，然後按 ID 反向排(最新在前)
+      visible.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0) || b.id - a.id);
+      
+      document.getElementById('wish-counter').innerText = wishes.length;
+      document.getElementById('wish-counter-mobile').innerText = wishes.length;
 
       if (visible.length === 0) {
         container.innerHTML = '';
         emptyState.classList.remove('hidden');
         return;
       }
-
+      
       emptyState.classList.add('hidden');
       container.innerHTML = visible.map((item) => {
         const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
-        const rot = item.rotation || 0;
-        const pinClass = item.isPinned ? 'pinned-card' : '';
-        
         return `
-          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-5 shadow-sm relative cursor-pointer group flex flex-col justify-between ${pinClass}"
-               style="transform: rotate(${rot}deg);"
-               onclick="openMagnifyModal('${item.id}')">
-            
+          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-4 md:p-5 shadow-sm relative cursor-pointer group flex flex-col justify-between ${item.isPinned ? 'pinned-card' : ''}"
+               style="transform: rotate(${item.rotation || 0}deg);" onclick="openMagnifyModal('${item.id}')">
             <div class="washi-tape ${item.isPinned ? 'washi-tape-gold' : ''}"></div>
-            
             <div>
               <div class="flex items-center justify-between gap-2 mb-3 pt-1">
                 <div class="flex items-center gap-2">
-                  <span class="w-9 h-9 rounded-xl bg-white/90 border border-black/5 flex items-center justify-center text-xl shadow-xs">
-                    ${item.emoji || '🎓'}
-                  </span>
+                  <span class="w-9 h-9 rounded-xl bg-white/90 flex items-center justify-center text-xl shadow-xs">${item.emoji || '🎓'}</span>
                   <div>
                     <div class="flex items-center gap-1">
-                      <h3 class="font-bold text-sm tracking-wide ${theme.text}">${escapeHtml(item.author || '')}</h3>
+                      <h3 class="font-bold text-sm ${theme.text}">${escapeHtml(item.author)}</h3>
                       ${item.isPinned ? '<i data-lucide="pin" class="w-3.5 h-3.5 text-amber-600 fill-amber-500"></i>' : ''}
                     </div>
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded ${theme.badgeBg} ${theme.badgeText}">
-                      ${escapeHtml(item.role || '系友')}
-                    </span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded ${theme.badgeBg} ${theme.badgeText}">${escapeHtml(item.role)}</span>
                   </div>
                 </div>
-                <span class="text-[11px] text-stone-400 font-medium">${item.timestamp || '剛剛'}</span>
               </div>
-
-              <p class="text-stone-800 text-sm leading-relaxed font-warm whitespace-pre-line mb-3">
-                ${escapeHtml(item.message || '')}
-              </p>
+              <p class="text-stone-800 text-sm leading-relaxed font-warm whitespace-pre-line mb-3">${escapeHtml(item.message)}</p>
             </div>
-
             <div class="flex items-center justify-between text-xs pt-2.5 border-t border-black/5 text-stone-500">
-              <span class="text-[11px] text-stone-400 group-hover:text-amber-800 font-medium transition flex items-center gap-1">
-                <i data-lucide="maximize" class="w-3 h-3"></i> 放大檢視
-              </span>
+              <span class="text-[11px] text-stone-400 group-hover:text-amber-800 transition">點擊放大檢視</span>
               <button onclick="likeCard(event, '${item.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
-                <i data-lucide="heart" class="w-3.5 h-3.5 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
-                <span class="text-xs font-bold">${item.likes || 0}</span>
+                <i data-lucide="heart" class="w-4 h-4 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
+                <span class="text-xs font-bold text-rose-500">${item.likes || 0}</span>
               </button>
             </div>
           </div>
         `;
       }).join('');
-
       lucide.createIcons();
     }
 
-    // Form Submissions
-    window.setRoleFilter = (role) => {
+    function setRoleFilter(role) {
       currentRoleFilter = role;
       document.querySelectorAll('#role-filter-group .role-btn').forEach(btn => {
-        if (btn.getAttribute('data-role') === role) {
-          btn.className = 'role-btn px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 shadow-xs';
-        } else {
-          btn.className = 'role-btn px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium hover:bg-amber-50 transition';
-        }
+        btn.className = btn.getAttribute('data-role') === role 
+          ? 'role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold border-amber-600 text-xs' 
+          : 'role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs';
       });
       renderWishes();
-    };
+    }
+    
+    function handleSearch(val) { currentSearchKeyword = val.trim(); renderWishes(); }
 
-    window.handleSearch = (val) => {
-      currentSearchKeyword = val.trim();
-      renderWishes();
-    };
-
-    window.likeCard = async (e, id) => {
-      e.stopPropagation();
-      if (!auth.currentUser) return;
-
-      const card = window.wishes.find(w => w.id === id);
-      if (card) {
-        const newLikes = (card.likes || 0) + 1;
-        try {
-          await updateDoc(getWishDoc(id), { likes: newLikes });
-          confetti({ particleCount: 25, spread: 45, origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight } });
-        } catch (err) { console.error("Like failed:", err); }
-      }
-    };
-
-    window.setupColorSelector = () => {
-      const container = document.getElementById('color-selector');
-      container.innerHTML = CARD_THEMES.map(t => `
-        <button type="button" onclick="selectTheme('${t.id}')" class="w-8 h-8 rounded-full ${t.bg} ${t.border} border-2 transition transform hover:scale-110 flex items-center justify-center shadow-xs">
-          ${t.id === selectedThemeId ? '<i data-lucide="check" class="w-4 h-4 text-stone-800"></i>' : ''}
-        </button>
-      `).join('');
-    };
-
-    window.selectTheme = (themeId) => {
-      selectedThemeId = themeId;
-      window.setupColorSelector();
-      lucide.createIcons();
-    };
-
-    window.setupEmojiSelector = () => {
-      const container = document.getElementById('emoji-selector');
-      container.innerHTML = EMOJIS.map(emo => `
-        <button type="button" onclick="selectEmoji('${emo}')" class="p-2 text-xl rounded-xl border transition ${selectedEmoji === emo ? 'bg-amber-100 border-amber-400 scale-105 shadow-sm' : 'border-stone-100 hover:bg-stone-50'}">
-          ${emo}
-        </button>
-      `).join('');
-    };
-
-    window.selectEmoji = (emo) => {
-      selectedEmoji = emo;
-      window.setupEmojiSelector();
-    };
-
-    window.applyPreset = (text) => {
-      const textarea = document.getElementById('input-message');
-      textarea.value = text;
-      window.updateCharCount();
-    };
-
-    window.updateCharCount = () => {
-      const textarea = document.getElementById('input-message');
-      document.getElementById('char-count').innerText = `${textarea.value.length}/150`;
-    };
-
-    // Submitting a new wish
-    window.handleFormSubmit = async (e) => {
+    function handleFormSubmit(e) {
       e.preventDefault();
-      if (!auth.currentUser) return; // Guard clause
-
       const author = document.getElementById('input-author').value.trim();
       const role = document.getElementById('input-role').value;
-      let message = document.getElementById('input-message').value.trim();
-
+      const message = document.getElementById('input-message').value.trim();
       if (!author || !message) return;
 
-      const sensitiveInput = document.getElementById('setting-sensitive-words')?.value || '';
-      const sensitiveWords = sensitiveInput.split(',').map(s => s.trim()).filter(Boolean);
-      sensitiveWords.forEach(word => {
-        const reg = new RegExp(word, 'gi');
-        message = message.replace(reg, '***');
-      });
-
-      const randomRot = parseFloat((Math.random() * 3.6 - 1.8).toFixed(1));
-      const isApproved = !window.isAutoModerateEnabled;
-
-      const newWishData = {
-        author: author,
-        role: role,
-        message: message,
-        emoji: selectedEmoji,
-        themeId: selectedThemeId,
-        timestamp: '剛剛',
-        rotation: randomRot,
-        likes: 1,
-        status: isApproved ? 'APPROVED' : 'PENDING',
-        isPinned: false,
-        createdAt: Date.now()
+      const newWish = {
+        id: Date.now().toString(), author, role, message,
+        emoji: selectedEmoji, themeId: selectedThemeId,
+        timestamp: '剛剛', rotation: parseFloat((Math.random() * 3.6 - 1.8).toFixed(1)),
+        likes: 0, status: 'APPROVED', isPinned: false
       };
 
-      try {
-        await addDoc(getWishesCollection(), newWishData);
-        
-        playChimeSound();
-        if (isApproved) {
-          confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, colors: ['#D4AF37', '#F59E0B', '#F43F5E', '#10B981', '#6366F1'] });
-        }
-
-        window.closeSenderModal();
-        document.getElementById('wish-form').reset();
-        window.updateCharCount();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      } catch (err) { console.error("Submit failed:", err); }
-    };
-
-    // Simulators
-    window.triggerManualSim = async () => {
-      if (!auth.currentUser) return;
-      const demoPool = [
-        { author: '第10屆系友 志偉', role: '畢業系友', message: '看著教科系邁入30周年，內心滿滿驕傲！祝福母系欣欣向榮！🎓', emoji: '🎉', themeId: 'yellow' },
-        { author: '教育科技碩士班 佳玲', role: '教科在校生', message: '在教科系做研究、學科技教學，每天都很充實！祝教科系 30 歲生日快樂！🎂', emoji: '💡', themeId: 'blue' },
-        { author: '第22屆 冠宇', role: '畢業系友', message: '電腦教室永遠有我們的汗水與笑聲！教科30歲快樂！❤️', emoji: '❤️', themeId: 'pink' }
-      ];
-
-      const item = demoPool[Math.floor(Math.random() * demoPool.length)];
-      const randomRot = parseFloat((Math.random() * 3.6 - 1.8).toFixed(1));
-
-      const simWishData = {
-        ...item, timestamp: '剛剛', rotation: randomRot, likes: Math.floor(Math.random() * 5) + 1,
-        status: window.isAutoModerateEnabled ? 'PENDING' : 'APPROVED', isPinned: false, createdAt: Date.now()
-      };
-
-      try {
-        await addDoc(getWishesCollection(), simWishData);
-        playChimeSound();
-        if (!window.isAutoModerateEnabled) confetti({ particleCount: 45, spread: 50, origin: { y: 0.5 } });
-      } catch (err) { console.error("Simulation failed", err); }
-    };
-
-    window.toggleAutoSim = () => {
-      const btn = document.getElementById('auto-sim-btn');
-      const statusText = document.getElementById('sim-status');
-      if (autoSimInterval) {
-        clearInterval(autoSimInterval);
-        autoSimInterval = null;
-        btn.className = 'flex-1 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg text-xs font-medium transition shadow-xs flex items-center justify-center gap-1';
-        statusText.innerText = '靜止';
-        statusText.className = 'text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 font-normal';
-      } else {
-        window.triggerManualSim();
-        autoSimInterval = setInterval(window.triggerManualSim, 7000);
-        btn.className = 'flex-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition shadow-xs flex items-center justify-center gap-1';
-        statusText.innerText = '自動模擬中';
-        statusText.className = 'text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold animate-pulse';
-      }
-      lucide.createIcons();
-    };
-
-    // Admin Dashboard
-    window.toggleAdminDrawer = () => {
-      const drawer = document.getElementById('admin-drawer');
-      isAdminOpen = !isAdminOpen;
-      if (isAdminOpen) {
-        drawer.classList.remove('translate-x-full');
-        updateAdminDashboard();
-      } else {
-        drawer.classList.add('translate-x-full');
-      }
-    };
-
-    window.switchAdminTab = (tabName) => {
-      currentAdminTab = tabName;
-      ['moderation', 'stats', 'settings'].forEach(t => {
-        document.getElementById(`admin-tab-${t}`).classList.add('hidden');
-        document.getElementById(`tab-btn-${t}`).className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
-      });
-
-      document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
-      document.getElementById(`tab-btn-${tabName}`).className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
-    };
-
-    window.setAdminStatusFilter = (status) => {
-      currentAdminStatusFilter = status;
-      ['ALL', 'PENDING', 'APPROVED', 'REJECTED'].forEach(st => {
-        const btn = document.getElementById(`admin-st-${st}`);
-        btn.className = (st === status) ? 'px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold' : 'px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600';
-      });
-      renderAdminList();
-    };
-
-    function updateAdminDashboard() {
-      const allList = window.wishes;
-      const cntAll = allList.length;
-      const cntPending = allList.filter(w => w.status === 'PENDING').length;
-      const cntApproved = allList.filter(w => w.status === 'APPROVED').length;
-      const cntRejected = allList.filter(w => w.status === 'REJECTED').length;
-      const totalLikes = allList.reduce((sum, w) => sum + (w.likes || 0), 0);
-      const pinnedCnt = allList.filter(w => w.isPinned).length;
-
-      document.getElementById('cnt-all').innerText = cntAll;
-      document.getElementById('cnt-pending').innerText = cntPending;
-      document.getElementById('cnt-approved').innerText = cntApproved;
-      document.getElementById('cnt-rejected').innerText = cntRejected;
-
-      const badge = document.getElementById('pending-badge');
-      if (cntPending > 0) {
-        badge.innerText = cntPending;
-        badge.classList.remove('hidden');
-      } else {
-        badge.classList.add('hidden');
-      }
-
-      document.getElementById('stat-total').innerText = cntAll;
-      document.getElementById('stat-rate').innerText = cntAll > 0 ? `${Math.round((cntApproved / cntAll) * 100)}%` : '100%';
-      document.getElementById('stat-likes').innerText = totalLikes;
-      document.getElementById('stat-pinned').innerText = pinnedCnt;
-
-      renderRoleStatsChart();
-      renderAdminList();
-    }
-
-    function renderRoleStatsChart() {
-      const container = document.getElementById('role-chart-container');
-      const roles = ['畢業系友', '教科在校生', '系上師長', '貴賓好友'];
-      const total = window.wishes.length || 1;
-
-      container.innerHTML = roles.map(role => {
-        const count = window.wishes.filter(w => w.role === role || (role === '系上師長' && w.role === '退休師長')).length;
-        const pct = Math.round((count / total) * 100);
-        return `
-          <div>
-            <div class="flex justify-between text-xs text-slate-300 mb-1">
-              <span>${role}</span>
-              <span>${count} 則 (${pct}%)</span>
-            </div>
-            <div class="w-full bg-slate-700 h-2 rounded-full overflow-hidden">
-              <div class="bg-gradient-to-r from-amber-500 to-amber-300 h-full transition-all duration-500" style="width: ${pct}%"></div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function renderAdminList() {
-      const container = document.getElementById('admin-message-list');
-      let filtered = window.wishes;
-
-      if (currentAdminStatusFilter !== 'ALL') {
-        filtered = filtered.filter(w => w.status === currentAdminStatusFilter);
-      }
-
-      if (filtered.length === 0) {
-        container.innerHTML = '<div class="text-center py-10 text-slate-500 text-xs">此分類下尚無留言項目</div>';
-        return;
-      }
-
-      container.innerHTML = filtered.map(w => {
-        let statusBadge = '';
-        if (w.status === 'APPROVED') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-bold">已展示</span>';
-        else if (w.status === 'PENDING') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">待審核</span>';
-        else if (w.status === 'REJECTED') statusBadge = '<span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold">已隱藏</span>';
-
-        return `
-          <div class="p-4 rounded-2xl bg-slate-800 border border-slate-700/80 flex flex-col gap-2.5">
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <span class="text-lg">${w.emoji || '🎓'}</span>
-                <span class="font-bold text-sm text-slate-100">${escapeHtml(w.author || '')}</span>
-                <span class="text-[10px] px-1.5 py-0.5 bg-slate-700 text-slate-300 rounded">${escapeHtml(w.role || '')}</span>
-                ${statusBadge}
-                ${w.isPinned ? '<span class="text-[10px] px-1.5 py-0.5 bg-amber-500/30 text-amber-300 rounded flex items-center gap-0.5"><i data-lucide="pin" class="w-2.5 h-2.5"></i> 置頂</span>' : ''}
-              </div>
-              <span class="text-[11px] text-slate-500">${w.timestamp || '剛剛'}</span>
-            </div>
-            <p class="text-xs text-slate-300 font-warm leading-relaxed bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/50">
-              ${escapeHtml(w.message || '')}
-            </p>
-            <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-700/50">
-              <div class="flex items-center gap-1.5">
-                ${w.status !== 'APPROVED' ? `<button onclick="setCardStatus('${w.id}', 'APPROVED')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 rounded-lg font-medium transition">展示</button>` : ''}
-                ${w.status !== 'REJECTED' ? `<button onclick="setCardStatus('${w.id}', 'REJECTED')" class="px-2.5 py-1 bg-rose-600/20 hover:bg-rose-600/40 text-rose-300 rounded-lg font-medium transition">隱藏</button>` : ''}
-                <button onclick="togglePinCard('${w.id}')" class="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/40 text-amber-300 rounded-lg font-medium transition">
-                  ${w.isPinned ? '取消置頂' : '設為置頂'}
-                </button>
-              </div>
-              <div class="flex items-center gap-2">
-                <button onclick="openEditModal('${w.id}')" class="text-slate-400 hover:text-amber-400 p-1" title="編輯內容"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
-                <button onclick="deleteCard('${w.id}')" class="text-slate-400 hover:text-rose-400 p-1" title="永久刪除"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      lucide.createIcons();
-    }
-
-    window.setCardStatus = async (id, status) => {
-      if (!auth.currentUser) return;
-      try { await updateDoc(getWishDoc(id), { status: status }); } catch (e) {}
-    };
-
-    window.togglePinCard = async (id) => {
-      if (!auth.currentUser) return;
-      const card = window.wishes.find(w => w.id === id);
-      if (card) {
-        try { await updateDoc(getWishDoc(id), { isPinned: !card.isPinned }); } catch (e) {}
-      }
-    };
-
-    window.batchApprovePending = async () => {
-      if (!auth.currentUser) return;
-      const pendingList = window.wishes.filter(w => w.status === 'PENDING');
-      for (const item of pendingList) {
-        try { await updateDoc(getWishDoc(item.id), { status: 'APPROVED' }); } catch(e) {}
-      }
-    };
-
-    window.deleteCard = async (id) => {
-      if (!auth.currentUser) return;
-      try { await deleteDoc(getWishDoc(id)); } catch (e) {}
-    };
-
-    window.openEditModal = (id) => {
-      const card = window.wishes.find(w => w.id === id);
-      if (!card) return;
-      document.getElementById('edit-id').value = card.id;
-      document.getElementById('edit-author').value = card.author || '';
-      document.getElementById('edit-message').value = card.message || '';
-      document.getElementById('edit-modal').classList.remove('hidden');
-    };
-
-    window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
-
-    window.saveEditCard = async () => {
-      if (!auth.currentUser) return;
-      const id = document.getElementById('edit-id').value;
-      const author = document.getElementById('edit-author').value.trim();
-      const message = document.getElementById('edit-message').value.trim();
-
-      if (id) {
-        try { await updateDoc(getWishDoc(id), { author, message }); } catch (e) {}
-      }
-      window.closeEditModal();
-    };
-
-    window.toggleAutoModerateSetting = async (checked) => {
-      window.isAutoModerateEnabled = checked;
-      if (!auth.currentUser) return;
-      try {
-        await setDoc(getSettingsDoc(), {
-          autoModerate: checked,
-          sensitiveWords: document.getElementById('setting-sensitive-words')?.value || '廣告, 詐騙, 買粉'
-        }, { merge: true });
-      } catch (e) {}
-    };
-
-    // Standard Modals
-    window.openSenderModal = () => document.getElementById('sender-modal').classList.remove('hidden');
-    window.closeSenderModal = () => document.getElementById('sender-modal').classList.add('hidden');
-
-    window.openMagnifyModal = (id) => {
-      const item = window.wishes.find(w => w.id === id);
-      if (!item) return;
-
-      const modal = document.getElementById('magnify-modal');
-      const box = document.getElementById('magnify-card-content');
-      const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
-
-      box.className = `relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
-      document.getElementById('mag-avatar').innerText = item.emoji || '🎓';
-      document.getElementById('mag-name').innerText = item.author || '';
+      wishes.unshift(newWish); // 加入最前面
+      saveData();
       
-      const roleBadge = document.getElementById('mag-role');
-      roleBadge.innerText = item.role || '系友';
-      roleBadge.className = `text-xs px-2.5 py-0.5 rounded-md font-bold ${theme.badgeBg} ${theme.badgeText}`;
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+      closeSenderModal();
+      document.getElementById('wish-form').reset();
+      updateCharCount();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-      document.getElementById('mag-time').innerText = item.timestamp || '剛剛';
-      document.getElementById('mag-text').innerText = item.message || '';
+    function likeCard(e, id) {
+      e.stopPropagation();
+      const card = wishes.find(w => w.id === id);
+      if (card) {
+        card.likes = (card.likes || 0) + 1;
+        saveData();
+        confetti({ particleCount: 20, spread: 40, origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight } });
+      }
+    }
 
-      const likeBtn = document.getElementById('mag-like-btn');
-      document.getElementById('mag-like-count').innerText = `送上祝福 (${item.likes || 0})`;
-      likeBtn.onclick = (e) => {
-        window.likeCard(e, item.id);
-        document.getElementById('mag-like-count').innerText = `送上祝福 (${(item.likes || 0) + 1})`;
+    function triggerManualSim() {
+      const newWish = {
+        id: Date.now().toString(), author: '展示機', role: '畢業系友', message: '這是一條手動觸發的測試留言！🎉',
+        emoji: '💡', themeId: 'blue', timestamp: '剛剛', rotation: parseFloat((Math.random() * 3.6 - 1.8).toFixed(1)),
+        likes: Math.floor(Math.random() * 5), status: 'APPROVED', isPinned: false
       };
+      wishes.unshift(newWish);
+      saveData();
+    }
 
-      modal.classList.remove('hidden');
-      lucide.createIcons();
-    };
-
-    window.closeMagnifyModal = () => document.getElementById('magnify-modal').classList.add('hidden');
-
-    window.toggleFullScreen = () => {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        if (document.exitFullscreen) document.exitFullscreen();
+    function clearAllData() {
+      if(confirm('確定要清空所有留言測試資料嗎？')) {
+        wishes = [];
+        saveData();
       }
-    };
+    }
 
-    window.toggleAutoScroll = () => {
-      isAutoScrolling = !isAutoScrolling;
-      const btnIcon = document.getElementById('autoscroll-icon');
-      const btnLabel = document.getElementById('autoscroll-label');
+    // --- UI 工具函式 ---
+    function setupColorSelector() {
+      document.getElementById('color-selector').innerHTML = CARD_THEMES.map(t => `<button type="button" onclick="selectTheme('${t.id}')" class="w-8 h-8 rounded-full ${t.bg} ${t.border} border-2 flex items-center justify-center">${t.id === selectedThemeId ? '<i data-lucide="check" class="w-4 h-4 text-stone-800"></i>' : ''}</button>`).join('');
+    }
+    function selectTheme(themeId) { selectedThemeId = themeId; setupColorSelector(); lucide.createIcons(); }
+    
+    function setupEmojiSelector() {
+      document.getElementById('emoji-selector').innerHTML = EMOJIS.map(emo => `<button type="button" onclick="selectEmoji('${emo}')" class="p-2 text-xl rounded-xl border ${selectedEmoji === emo ? 'bg-amber-100 border-amber-400' : 'border-stone-100'}">${emo}</button>`).join('');
+    }
+    function selectEmoji(emo) { selectedEmoji = emo; setupEmojiSelector(); }
 
-      if (isAutoScrolling) {
-        btnIcon.setAttribute('data-lucide', 'pause');
-        btnLabel.innerText = '暫停輪播';
-        clearInterval(autoScrollInterval);
-        let direction = 1;
-        autoScrollInterval = setInterval(() => {
-          window.scrollBy({ top: 1.5 * direction, behavior: 'smooth' });
-          if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 8) {
-            direction = -1;
-          } else if (window.scrollY <= 0) {
-            direction = 1;
-          }
-        }, 55);
-      } else {
-        btnIcon.setAttribute('data-lucide', 'play');
-        btnLabel.innerText = '舞台輪播';
-        clearInterval(autoScrollInterval);
-      }
+    function updateCharCount() { document.getElementById('char-count').innerText = `${document.getElementById('input-message').value.length}/150`; }
+    function applyPreset(text) { document.getElementById('input-message').value = text; updateCharCount(); }
+    
+    function openSenderModal() { document.getElementById('sender-modal').classList.remove('hidden'); }
+    function closeSenderModal() { document.getElementById('sender-modal').classList.add('hidden'); }
+    function openQrModal() { document.getElementById('qr-modal').classList.remove('hidden'); }
+    function closeQrModal() { document.getElementById('qr-modal').classList.add('hidden'); }
+
+    function openMagnifyModal(id) {
+      const item = wishes.find(w => w.id === id); if(!item) return;
+      const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
+      document.getElementById('magnify-card-content').className = `relative w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
+      document.getElementById('mag-avatar').innerText = item.emoji || '🎓';
+      document.getElementById('mag-name').innerText = item.author;
+      document.getElementById('mag-role').innerText = item.role;
+      document.getElementById('mag-role').className = `text-xs px-2.5 py-1 rounded-md font-bold mt-1 inline-block ${theme.badgeBg} ${theme.badgeText}`;
+      document.getElementById('mag-text').innerText = item.message;
+      document.getElementById('mag-like-count').innerText = `送上愛心 (${item.likes || 0})`;
+      document.getElementById('mag-like-btn').onclick = (e) => { likeCard(e, item.id); document.getElementById('mag-like-count').innerText = `送上愛心 (${item.likes+1})`; };
+      document.getElementById('magnify-modal').classList.remove('hidden');
       lucide.createIcons();
-    };
+    }
+    function closeMagnifyModal() { document.getElementById('magnify-modal').classList.add('hidden'); }
 
-    window.exportWishes = () => {
-      const dataStr = window.wishes.map((w, idx) => `[${idx + 1}] ${w.author} (${w.role}) - 狀態: ${w.status} - 時間: ${w.timestamp}\n${w.message}\n`).join('\n---\n\n');
-      const blob = new Blob([`淡江大學教育科技系 30 周年慶・數位祝福名冊\n匯出時間：${new Date().toLocaleString()}\n\n${dataStr}`], { type: 'text/plain;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `淡江教科30周年祝福名冊_${new Date().toISOString().slice(0,10)}.txt`;
-      a.click();
-      URL.revokeObjectURL(url);
-    };
-
-    function escapeHtml(string) {
-      const div = document.createElement('div');
-      div.innerText = string;
-      return div.innerHTML;
+    function initQRCodes() {
+      const url = window.location.href;
+      if(document.getElementById('qrcode-display')) new QRCode(document.getElementById('qrcode-display'), { text: url, width: 120, height: 120, colorDark: '#451A03', colorLight: '#ffffff' });
+      if(document.getElementById('qrcode-large')) new QRCode(document.getElementById('qrcode-large'), { text: url, width: 220, height: 220, colorDark: '#451A03', colorLight: '#ffffff' });
     }
 
     function initParticles() {
-      const canvas = document.getElementById('ambient-canvas');
-      const ctx = canvas.getContext('2d');
-      let width = canvas.width = window.innerWidth;
-      let height = canvas.height = window.innerHeight;
-
-      window.addEventListener('resize', () => {
-        width = canvas.width = window.innerWidth;
-        height = canvas.height = window.innerHeight;
-      });
-
-      const particles = Array.from({ length: 35 }, () => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        r: Math.random() * 3 + 1,
-        dx: (Math.random() - 0.5) * 0.35,
-        dy: (Math.random() - 0.5) * 0.35,
-        alpha: Math.random() * 0.4 + 0.15,
-        color: ['#D4AF37', '#F59E0B', '#E2B870', '#800000', '#10B981'][Math.floor(Math.random() * 5)]
-      }));
-
-      function renderLoop() {
-        ctx.clearRect(0, 0, width, height);
-        particles.forEach(p => {
-          p.x += p.dx;
-          p.y += p.dy;
-          if (p.x < 0) p.x = width;
-          if (p.x > width) p.x = 0;
-          if (p.y < 0) p.y = height;
-          if (p.y > height) p.y = 0;
-
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.globalAlpha = p.alpha;
-          ctx.fill();
-        });
-        ctx.globalAlpha = 1;
-        requestAnimationFrame(renderLoop);
-      }
-      renderLoop();
+      const canvas = document.getElementById('ambient-canvas'); const ctx = canvas.getContext('2d');
+      let w = canvas.width = window.innerWidth, h = canvas.height = window.innerHeight;
+      window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+      const pts = Array.from({ length: 30 }, () => ({ x: Math.random()*w, y: Math.random()*h, r: Math.random()*2+1, dx: (Math.random()-0.5)*0.3, dy: (Math.random()-0.5)*0.3, a: Math.random()*0.3+0.1, c: '#D4AF37' }));
+      (function loop() { ctx.clearRect(0,0,w,h); pts.forEach(p => { p.x += p.dx; p.y += p.dy; if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=p.c; ctx.globalAlpha=p.a; ctx.fill(); }); ctx.globalAlpha=1; requestAnimationFrame(loop); })();
     }
 
-    // Startup Execution
-    window.addEventListener('DOMContentLoaded', () => {
-      const sessionAuth = sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
-      isAdminAuthenticated = sessionAuth;
-      updateAdminUI();
+    function escapeHtml(string) { const div = document.createElement('div'); div.innerText = string; return div.innerHTML; }
 
-      window.setupColorSelector();
-      window.setupEmojiSelector();
-      initQRCodes();
-      initParticles();
-      lucide.createIcons();
-
-      // Trigger Firebase
-      initAuthAndData();
-    });
-
+    window.addEventListener('DOMContentLoaded', init);
   </script>
 </body>
 </html>

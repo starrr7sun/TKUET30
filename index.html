@@ -338,4 +338,312 @@
     import { getDatabase, ref, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AI
+      apiKey: "AIzaSyB6ZPBvqBrG9gmvADzAEqNSH1t1Ch710dc",
+      authDomain: "tkuet30-ce24b.firebaseapp.com",
+      databaseURL: "https://tkuet30-ce24b-default-rtdb.firebaseio.com",
+      projectId: "tkuet30-ce24b",
+      storageBucket: "tkuet30-ce24b.firebasestorage.app",
+      messagingSenderId: "98337651911",
+      appId: "1:98337651911:web:8055b43d158d27c2d552e2",
+      measurementId: "G-G5SR1B0ZGD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    window.db = db;
+    window.wishesRef = ref(db, "tku30_wishes");
+    window.dbPush = push;
+    window.dbUpdate = update;
+    window.dbRemove = remove;
+    window.dbRef = ref;
+
+    onValue(window.wishesRef, (snapshot) => {
+      const cloudWishes = [];
+      snapshot.forEach((childSnapshot) => {
+        cloudWishes.push({ id: childSnapshot.key, ...childSnapshot.val() });
+      });
+      cloudWishes.sort((a, b) => b.createdAt - a.createdAt);
+      window.wishes = cloudWishes;
+      if (window.renderWishes) window.renderWishes();
+    }, (error) => {
+      console.error("讀取失敗，請確認安全規則是否設定正確", error);
+    });
+  </script>
+
+  <!-- ========================================== -->
+  <!-- UI 介面與互動操作邏輯 -->
+  <!-- ========================================== -->
+  <script>
+    const CARD_THEMES = [
+      { id: 'yellow', bg: 'bg-[#FEF7D8]', border: 'border-[#EEDFA3]', text: 'text-amber-950', badgeBg: 'bg-amber-200/70', badgeText: 'text-amber-900' },
+      { id: 'pink', bg: 'bg-[#FCE7E9]', border: 'border-[#EFC4C9]', text: 'text-rose-950', badgeBg: 'bg-rose-200/70', badgeText: 'text-rose-900' },
+      { id: 'green', bg: 'bg-[#E7F5EC]', border: 'border-[#C8E8D2]', text: 'text-emerald-950', badgeBg: 'bg-emerald-200/70', badgeText: 'text-emerald-900' },
+      { id: 'blue', bg: 'bg-[#E3F2FD]', border: 'border-[#BEDCF5]', text: 'text-sky-950', badgeBg: 'bg-sky-200/70', badgeText: 'text-sky-900' }
+    ];
+    const EMOJIS = ['🎓', '🎂', '✨', '❤️', '🚀', '🌱', '🎉', '💡'];
+    
+    window.wishes = [];
+    let selectedEmoji = '🎓';
+    let selectedThemeId = 'yellow';
+    let currentRoleFilter = 'ALL';
+    let currentSearchKeyword = '';
+    let autoScrollInterval = null;
+    let isAutoScrolling = false;
+    
+    let isAdminLoggedIn = sessionStorage.getItem('isAdmin') === 'true';
+
+    function init() {
+      setupColorSelector();
+      setupEmojiSelector();
+      initQRCodes();
+      initParticles();
+      updateAdminUI();
+      lucide.createIcons();
+    }
+
+    function updateAdminUI() {
+      const deskText = document.getElementById('admin-login-text-desk');
+      if (deskText) deskText.innerText = isAdminLoggedIn ? '管理登出' : '管理登入';
+      
+      const deskIcon = document.getElementById('admin-login-icon-desk');
+      if (deskIcon) deskIcon.setAttribute('data-lucide', isAdminLoggedIn ? 'log-out' : 'shield');
+      
+      const mobIcon = document.getElementById('admin-login-icon-mob');
+      if (mobIcon) mobIcon.setAttribute('data-lucide', isAdminLoggedIn ? 'log-out' : 'shield');
+      
+      lucide.createIcons();
+    }
+
+    function toggleAdminAuth() {
+      if (isAdminLoggedIn) {
+        if (confirm("確定要登出管理員嗎？")) {
+          isAdminLoggedIn = false;
+          sessionStorage.removeItem('isAdmin');
+          updateAdminUI();
+          renderWishes();
+        }
+      } else {
+        document.getElementById('admin-modal').classList.remove('hidden');
+        document.getElementById('admin-error').classList.add('hidden');
+        document.getElementById('admin-username').value = '';
+        document.getElementById('admin-password').value = '';
+      }
+    }
+    
+    function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+
+    function handleAdminLogin() {
+      const u = document.getElementById('admin-username').value.trim();
+      const p = document.getElementById('admin-password').value.trim();
+      
+      if (u === 'TKUET30HBD' && p === 'Tkuet30hbd') {
+        isAdminLoggedIn = true;
+        sessionStorage.setItem('isAdmin', 'true');
+        closeAdminModal();
+        updateAdminUI();
+        renderWishes();
+      } else {
+        document.getElementById('admin-error').classList.remove('hidden');
+      }
+    }
+
+    function renderWishes() {
+      const container = document.getElementById('wishes-container');
+      const emptyState = document.getElementById('empty-state');
+      
+      let visible = window.wishes;
+      if (currentRoleFilter !== 'ALL') visible = visible.filter(w => w.role === currentRoleFilter);
+      if (currentSearchKeyword) {
+        const kw = currentSearchKeyword.toLowerCase();
+        visible = visible.filter(w => w.author.toLowerCase().includes(kw) || w.message.toLowerCase().includes(kw));
+      }
+      
+      document.getElementById('wish-counter').innerText = window.wishes.length;
+      document.getElementById('wish-counter-mobile').innerText = window.wishes.length;
+
+      if (visible.length === 0) {
+        container.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
+      
+      emptyState.classList.add('hidden');
+      container.innerHTML = visible.map((item) => {
+        const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
+        return `
+          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-4 md:p-5 shadow-sm relative cursor-pointer group flex flex-col justify-between"
+               style="transform: rotate(${item.rotation || 0}deg);" onclick="openMagnifyModal('${item.id}')">
+            <div class="washi-tape"></div>
+            <div>
+              <div class="flex items-center justify-between gap-2 mb-3 pt-1">
+                <div class="flex items-center gap-2">
+                  <span class="w-9 h-9 rounded-xl bg-white/90 flex items-center justify-center text-xl shadow-xs">${item.emoji || '🎓'}</span>
+                  <div>
+                    <h3 class="font-bold text-sm ${theme.text}">${escapeHtml(item.author)}</h3>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded ${theme.badgeBg} ${theme.badgeText}">${escapeHtml(item.role)}</span>
+                  </div>
+                </div>
+              </div>
+              <p class="text-stone-800 text-sm leading-relaxed font-warm whitespace-pre-line mb-3">${escapeHtml(item.message)}</p>
+            </div>
+            
+            <div class="flex justify-between items-center text-xs pt-2.5 border-t border-black/5">
+              <span class="text-[11px] text-stone-400 group-hover:text-amber-800 transition">點擊放大檢視</span>
+              
+              <div class="flex items-center gap-2" onclick="event.stopPropagation()">
+                ${isAdminLoggedIn ? `
+                  <button onclick="deleteCard(event, '${item.id}')" class="flex items-center gap-1 hover:text-rose-600 transition px-2 py-1 rounded-lg bg-white/60 hover:bg-rose-50 text-stone-600 border border-stone-200">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i>刪除
+                  </button>
+                ` : ''}
+                
+                <button onclick="likeCard(event, '${item.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
+                  <i data-lucide="heart" class="w-4 h-4 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
+                  <span class="text-xs font-bold text-rose-500">${item.likes || 0}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      lucide.createIcons();
+    }
+
+    function setRoleFilter(role) {
+      currentRoleFilter = role;
+      document.querySelectorAll('#role-filter-group .role-btn').forEach(btn => {
+        btn.className = btn.getAttribute('data-role') === role 
+          ? 'role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold text-xs' 
+          : 'role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-white border-stone-200 text-stone-600 font-medium text-xs';
+      });
+      renderWishes();
+    }
+    
+    function handleSearch(val) { currentSearchKeyword = val.trim(); renderWishes(); }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const author = document.getElementById('input-author').value.trim();
+      const role = document.getElementById('input-role').value;
+      const message = document.getElementById('input-message').value.trim();
+      if (!author || !message) return;
+
+      const newWish = {
+        author, role, message,
+        emoji: selectedEmoji, 
+        themeId: selectedThemeId,
+        rotation: parseFloat((Math.random() * 3.6 - 1.8).toFixed(1)),
+        likes: 0,
+        createdAt: Date.now()
+      };
+
+      try {
+        if (!window.dbPush || !window.wishesRef) {
+          alert("資料庫尚未連接，請重新整理網頁後再試一次。");
+          return;
+        }
+        await window.dbPush(window.wishesRef, newWish);
+        confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
+        closeSenderModal();
+        document.getElementById('wish-form').reset();
+        updateCharCount();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) {
+        console.error(err);
+        alert("上傳失敗，請確認資料庫權限設定。");
+      }
+    }
+
+    async function likeCard(e, id) {
+      e.stopPropagation();
+      const card = window.wishes.find(w => w.id === id);
+      if (card && window.db) {
+        try {
+          const itemRef = window.dbRef(window.db, `tku30_wishes/${id}`);
+          await window.dbUpdate(itemRef, { likes: (card.likes || 0) + 1 });
+          confetti({ particleCount: 20, spread: 40, origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight } });
+        } catch(err) {
+          console.error("按讚同步失敗", err);
+        }
+      }
+    }
+
+    async function deleteCard(e, id) {
+      e.stopPropagation();
+      if (!isAdminLoggedIn) return;
+      if (confirm("確定要刪除這則祝福留言嗎？")) {
+        try {
+          const itemRef = window.dbRef(window.db, `tku30_wishes/${id}`);
+          await window.dbRemove(itemRef);
+        } catch(err) {
+          console.error("刪除失敗", err);
+          alert("刪除失敗，請檢查權限。");
+        }
+      }
+    }
+
+    function openMagnifyModal(id) {
+      const item = window.wishes.find(w => w.id === id); if(!item) return;
+      const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
+      document.getElementById('magnify-card-content').className = `relative w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
+      document.getElementById('mag-avatar').innerText = item.emoji || '🎓';
+      document.getElementById('mag-name').innerText = item.author;
+      document.getElementById('mag-role').innerText = item.role;
+      document.getElementById('mag-role').className = `text-xs px-2.5 py-0.5 rounded-md font-bold mt-1 inline-block ${theme.badgeBg} ${theme.badgeText}`;
+      document.getElementById('mag-text').innerText = item.message;
+      document.getElementById('mag-like-count').innerText = `送上愛心 (${item.likes || 0})`;
+      document.getElementById('mag-like-btn').onclick = (e) => { likeCard(e, item.id); document.getElementById('mag-like-count').innerText = `送上愛心 (${(item.likes||0)+1})`; };
+      document.getElementById('magnify-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+    function closeMagnifyModal() { document.getElementById('magnify-modal').classList.add('hidden'); }
+
+    function setupColorSelector() {
+      document.getElementById('color-selector').innerHTML = CARD_THEMES.map(t => `<button type="button" onclick="selectTheme('${t.id}')" class="w-8 h-8 rounded-full ${t.bg} ${t.border} border-2 flex items-center justify-center">${t.id === selectedThemeId ? '<i data-lucide="check" class="w-4 h-4 text-stone-800"></i>' : ''}</button>`).join('');
+    }
+    function selectTheme(themeId) { selectedThemeId = themeId; setupColorSelector(); lucide.createIcons(); }
+    
+    function setupEmojiSelector() {
+      document.getElementById('emoji-selector').innerHTML = EMOJIS.map(emo => `<button type="button" onclick="selectEmoji('${emo}')" class="p-2 text-xl rounded-xl border ${selectedEmoji === emo ? 'bg-amber-100 border-amber-400' : 'border-stone-100'}">${emo}</button>`).join('');
+    }
+    function selectEmoji(emo) { selectedEmoji = emo; setupEmojiSelector(); }
+    function updateCharCount() { document.getElementById('char-count').innerText = `${document.getElementById('input-message').value.length}/150`; }
+    function applyPreset(text) { document.getElementById('input-message').value = text; updateCharCount(); }
+    
+    function openSenderModal() { document.getElementById('sender-modal').classList.remove('hidden'); }
+    function closeSenderModal() { document.getElementById('sender-modal').classList.add('hidden'); }
+    function openQrModal() { document.getElementById('qr-modal').classList.remove('hidden'); }
+    function closeQrModal() { document.getElementById('qr-modal').classList.add('hidden'); }
+
+    function initQRCodes() {
+      const url = window.location.href;
+      if(document.getElementById('qrcode-display')) new QRCode(document.getElementById('qrcode-display'), { text: url, width: 120, height: 120, colorDark: '#451A03', colorLight: '#ffffff' });
+      if(document.getElementById('qrcode-large')) new QRCode(document.getElementById('qrcode-large'), { text: url, width: 220, height: 220, colorDark: '#451A03', colorLight: '#ffffff' });
+    }
+
+    function toggleAutoScroll() {
+      isAutoScrolling = !isAutoScrolling;
+      if (isAutoScrolling) {
+        document.getElementById('autoscroll-icon').setAttribute('data-lucide', 'pause'); document.getElementById('autoscroll-label').innerText = '暫停輪播';
+        clearInterval(autoScrollInterval); let dir = 1;
+        autoScrollInterval = setInterval(() => { window.scrollBy({top: 1.5 * dir, behavior:'smooth'}); if((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 8) dir = -1; else if(window.scrollY <= 0) dir = 1; }, 55);
+      } else {
+        document.getElementById('autoscroll-icon').setAttribute('data-lucide', 'play'); document.getElementById('autoscroll-label').innerText = '舞台輪播';
+        clearInterval(autoScrollInterval);
+      }
+      lucide.createIcons();
+    }
+    function toggleFullScreen() { (!document.fullscreenElement) ? document.documentElement.requestFullscreen().catch(()=>{}) : (document.exitFullscreen && document.exitFullscreen()); }
+
+    function initParticles() {
+      const canvas = document.getElementById('ambient-canvas'); const ctx = canvas.getContext('2d');
+      let w = canvas.width = window.innerWidth, h = canvas.height = window.innerHeight;
+      window.addEventListener('resize', () => { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; });
+      const pts = Array.from({ length: 30 }, () => ({ x: Math.random()*w, y: Math.random()*h, r: Math.random()*2+1, dx: (Math.random()-0.5)*0.3, dy: (Math.random()-0.5)*0.3, a: Math.random()*0.3+0.1, c: '#D4AF37' }));
+      (function loop() { ctx.clearRect(0,0,w,h); pts.forEach(p => { p.x += p.dx; p.y += p.dy; if(p.x<0)p.x=w; if(p.x>w)p.x=0; if(p.y<0)p.y=h; if(p.y>h)p.y=0; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fillStyle=p.c; ctx.globalAlpha=p.a; ctx.fill(); }); ctx.globalAlpha=1; requestAnimationFrame(loop); })();
+    }
+    function escapeHtml(string) { const div = document.createElement('div'); div.innerText = string; return div.innerHTML; }
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

@@ -46,7 +46,6 @@
 
     .wishing-card { transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative; }
     .wishing-card:hover { transform: translateY(-6px) scale(1.02) !important; box-shadow: 0 20px 30px -10px rgba(138, 100, 60, 0.2); z-index: 25; }
-    .pinned-card { box-shadow: 0 0 0 3px #D4AF37, 0 12px 24px -6px rgba(212, 175, 55, 0.35); }
 
     .washi-tape {
       position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
@@ -58,7 +57,6 @@
 
     #ambient-canvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; }
     
-    /* 強制輸入框字體大於16px以防止iOS自動縮放 */
     input, textarea, select { font-size: 16px !important; }
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.03); }
@@ -94,14 +92,12 @@
           </div>
         </div>
 
-        <!-- 手機版精簡統計 -->
         <div class="lg:hidden px-2 py-1 bg-amber-50/80 border border-amber-200/80 rounded-lg flex items-center gap-1 text-amber-900">
           <i data-lucide="sparkles" class="w-3 h-3 text-amber-600"></i>
           <span id="wish-counter-mobile" class="text-sm font-black font-mono">0</span>
         </div>
       </div>
 
-      <!-- 電腦版操作按鈕 -->
       <div class="hidden lg:flex items-center gap-2.5">
         <div class="px-3.5 py-2 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-center gap-2 text-stone-700 shadow-xs">
           <i data-lucide="sparkles" class="w-4 h-4 text-amber-600"></i>
@@ -123,7 +119,6 @@
     </div>
   </header>
 
-  <!-- 篩選列 -->
   <section class="relative z-10 max-w-7xl mx-auto w-full px-4 pt-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
     <div class="flex items-center gap-2 overflow-x-auto w-full hide-scrollbar pb-1" id="role-filter-group">
       <button onclick="setRoleFilter('ALL')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold text-xs" data-role="ALL">全部留言</button>
@@ -138,13 +133,9 @@
     </div>
   </section>
 
-  <!-- 主要內容區 -->
   <main class="relative z-10 flex-1 p-4 md:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
-    <!-- 祝福卡片網格 -->
     <section class="flex-1 w-full">
-      <div id="wishes-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 auto-rows-max transition-all">
-        <!-- JS 動態填入 -->
-      </div>
+      <div id="wishes-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 auto-rows-max transition-all"></div>
       <div id="empty-state" class="hidden text-center py-12 md:py-20 bg-white/40 rounded-3xl border border-amber-900/5 mt-4">
         <div class="w-16 h-16 md:w-20 md:h-20 mx-auto rounded-full bg-amber-100/80 flex items-center justify-center text-amber-600 mb-3 shadow-inner">
           <i data-lucide="heart-handshake" class="w-8 h-8 md:w-10 md:h-10"></i>
@@ -154,7 +145,6 @@
       </div>
     </section>
 
-    <!-- 投影端右側 QR Code 掃描區 (電腦大螢幕專用) -->
     <aside class="hidden lg:flex w-80 flex-shrink-0 flex-col gap-4">
       <div class="sticky top-24 bg-white/85 backdrop-blur-md rounded-3xl p-6 border border-amber-900/10 shadow-xl text-center flex flex-col items-center">
         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100/70 text-amber-800 border border-amber-200 mb-3">
@@ -162,25 +152,17 @@
         </span>
         <h2 class="text-lg font-bold text-stone-800 font-serifTc">淡江教科 30th 祝願集結</h2>
         <p class="text-xs text-stone-500 mt-1 mb-4 leading-relaxed">相機對準條碼即可留言</p>
-
-        <!-- QR Code -->
         <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative">
           <div id="qrcode-display" class="flex justify-center items-center"></div>
         </div>
-
-        <p class="text-[11px] text-stone-400 mt-3 flex items-center gap-1">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i> 免下載 App・同步大螢幕
-        </p>
       </div>
     </aside>
   </main>
 
-  <!-- 手機版專屬懸浮留言按鈕 (FAB) -->
   <button onclick="openSenderModal()" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-95 transition-transform z-40 border-2 border-amber-200">
     <i data-lucide="edit-3" class="w-6 h-6"></i>
   </button>
 
-  <!-- 留言互動視窗 Modal -->
   <div id="sender-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm hidden flex items-end md:items-center justify-center p-0 md:p-4 transition-opacity">
     <div class="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
       <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-4 md:hidden"></div>
@@ -230,7 +212,6 @@
           <textarea id="input-message" required maxlength="150" rows="3" placeholder="想對教科系說的話..." class="w-full text-base p-3 rounded-xl border border-stone-200 bg-stone-50 font-warm" oninput="updateCharCount()"></textarea>
         </div>
         
-        <!-- 快速帶入按鈕 -->
         <div>
           <div class="flex flex-wrap gap-1.5">
             <button type="button" onclick="applyPreset('祝淡江教科系30週年快樂！感恩師長的啟蒙，願教科繼續璀璨耀眼！✨')" class="text-xs px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200/60">🎂 祝教科30生日快樂</button>
@@ -246,13 +227,12 @@
   </div>
 
   <!-- ========================================== -->
-  <!-- 跨裝置雲端資料庫 Firebase Firestore 核心邏輯 -->
+  <!-- Firebase Realtime Database 核心邏輯 -->
   <!-- ========================================== -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getDatabase, ref, push, onValue, update } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
 
-    // ✅ 這裡已經為你替換成專屬的金鑰設定！
     const firebaseConfig = {
       apiKey: "AIzaSyB6ZPBvqBrG9gmvADzAEqNSH1t1Ch710dc",
       authDomain: "tkuet30-ce24b.firebaseapp.com",
@@ -264,30 +244,26 @@
       measurementId: "G-G5SR1B0ZGD"
     };
 
-    // 初始化 Firebase (免登入直接讀寫模式)
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const db = getDatabase(app);
     window.db = db;
-    window.wishesCollectionRef = collection(db, "tku30_wishes");
-    window.updateDoc = updateDoc;
-    window.doc = doc;
-    window.addDoc = addDoc;
+    window.wishesRef = ref(db, "tku30_wishes");
+    window.dbPush = push;
+    window.dbUpdate = update;
+    window.dbRef = ref;
 
-    // 即時監聽資料庫變化 (跨裝置同步的核心！)
-    onSnapshot(window.wishesCollectionRef, (snapshot) => {
+    // 即時監聽資料庫變化 (跨裝置同步)
+    onValue(window.wishesRef, (snapshot) => {
       const cloudWishes = [];
-      snapshot.forEach((doc) => {
-        cloudWishes.push({ id: doc.id, ...doc.data() });
+      snapshot.forEach((childSnapshot) => {
+        cloudWishes.push({ id: childSnapshot.key, ...childSnapshot.val() });
       });
 
-      // 依照發布時間由新到舊排序
       cloudWishes.sort((a, b) => b.createdAt - a.createdAt);
-      
-      // 更新全局變數並重新渲染畫面
       window.wishes = cloudWishes;
       if (window.renderWishes) window.renderWishes();
     }, (error) => {
-      console.error("無法連線到資料庫，請檢查您的 Firebase Firestore 權限是否設為 Test Mode (allow read, write: if true;)", error);
+      console.error("讀取失敗，請確認安全規則是否設定正確", error);
     });
   </script>
 
@@ -382,7 +358,6 @@
     
     function handleSearch(val) { currentSearchKeyword = val.trim(); renderWishes(); }
 
-    // 【重要】將資料真實上傳到 Firebase 資料庫
     async function handleFormSubmit(e) {
       e.preventDefault();
       const author = document.getElementById('input-author').value.trim();
@@ -400,14 +375,11 @@
       };
 
       try {
-        if (!window.addDoc || !window.wishesCollectionRef) {
+        if (!window.dbPush || !window.wishesRef) {
           alert("資料庫尚未連接，請重新整理網頁後再試一次。");
           return;
         }
-        
-        // 寫入雲端資料庫
-        await window.addDoc(window.wishesCollectionRef, newWish);
-        
+        await window.dbPush(window.wishesRef, newWish);
         confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 } });
         closeSenderModal();
         document.getElementById('wish-form').reset();
@@ -415,18 +387,17 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (err) {
         console.error(err);
-        alert("上傳失敗，請確認您的 Firebase 資料庫安全規則已設定為 Test Mode (允許讀寫)。");
+        alert("上傳失敗，請確認安全規則已設定為讀寫開放。");
       }
     }
 
-    // 【重要】更新雲端資料庫的愛心數量
     async function likeCard(e, id) {
       e.stopPropagation();
       const card = window.wishes.find(w => w.id === id);
       if (card && window.db) {
         try {
-          const docRef = window.doc(window.db, "tku30_wishes", id);
-          await window.updateDoc(docRef, { likes: (card.likes || 0) + 1 });
+          const itemRef = window.dbRef(window.db, `tku30_wishes/${id}`);
+          await window.dbUpdate(itemRef, { likes: (card.likes || 0) + 1 });
           confetti({ particleCount: 20, spread: 40, origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight } });
         } catch(err) {
           console.error("按讚同步失敗", err);
@@ -434,7 +405,6 @@
       }
     }
 
-    // --- UI 工具函式 ---
     function setupColorSelector() {
       document.getElementById('color-selector').innerHTML = CARD_THEMES.map(t => `<button type="button" onclick="selectTheme('${t.id}')" class="w-8 h-8 rounded-full ${t.bg} ${t.border} border-2 flex items-center justify-center">${t.id === selectedThemeId ? '<i data-lucide="check" class="w-4 h-4 text-stone-800"></i>' : ''}</button>`).join('');
     }
@@ -444,19 +414,14 @@
       document.getElementById('emoji-selector').innerHTML = EMOJIS.map(emo => `<button type="button" onclick="selectEmoji('${emo}')" class="p-2 text-xl rounded-xl border ${selectedEmoji === emo ? 'bg-amber-100 border-amber-400' : 'border-stone-100'}">${emo}</button>`).join('');
     }
     function selectEmoji(emo) { selectedEmoji = emo; setupEmojiSelector(); }
-
     function updateCharCount() { document.getElementById('char-count').innerText = `${document.getElementById('input-message').value.length}/150`; }
     function applyPreset(text) { document.getElementById('input-message').value = text; updateCharCount(); }
-    
     function openSenderModal() { document.getElementById('sender-modal').classList.remove('hidden'); }
     function closeSenderModal() { document.getElementById('sender-modal').classList.add('hidden'); }
-    function openQrModal() { document.getElementById('qr-modal').classList.remove('hidden'); }
-    function closeQrModal() { document.getElementById('qr-modal').classList.add('hidden'); }
 
     function initQRCodes() {
       const url = window.location.href;
       if(document.getElementById('qrcode-display')) new QRCode(document.getElementById('qrcode-display'), { text: url, width: 120, height: 120, colorDark: '#451A03', colorLight: '#ffffff' });
-      if(document.getElementById('qrcode-large')) new QRCode(document.getElementById('qrcode-large'), { text: url, width: 220, height: 220, colorDark: '#451A03', colorLight: '#ffffff' });
     }
 
     function toggleAutoScroll() {

@@ -27,20 +27,6 @@
             warm: ['"Zen Maru Gothic"', 'sans-serif'],
             serifTc: ['"Noto Serif TC"', 'serif'],
             cinzel: ['"Cinzel"', 'serif'],
-          },
-          keyframes: {
-            floatBadge: {
-              '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
-              '50%': { transform: 'translateY(-6px) rotate(1deg)' }
-            },
-            popNote: {
-              '0%': { transform: 'scale(0.85) translateY(24px)', opacity: '0' },
-              '100%': { transform: 'scale(1) translateY(0)', opacity: '1' }
-            }
-          },
-          animation: {
-            floatBadge: 'floatBadge 4.5s ease-in-out infinite',
-            popNote: 'popNote 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards'
           }
         }
       }
@@ -85,11 +71,9 @@
   <!-- 頂部頁眉 -->
   <header class="relative z-20 px-4 py-3 md:py-4 border-b border-amber-900/10 bg-white/90 backdrop-blur-md shadow-sm sticky top-0">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-      
-      <!-- 標題與 30 週年專屬徽章 -->
       <div class="flex items-center gap-3 w-full lg:w-auto justify-between lg:justify-start">
         <div class="flex items-center gap-3">
-          <div class="relative animate-floatBadge flex-shrink-0">
+          <div class="relative flex-shrink-0">
             <div class="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex flex-col items-center justify-center text-white shadow-lg border-2 border-amber-200">
               <span class="font-cinzel text-[10px] md:text-xs font-semibold leading-none text-amber-200">TKU</span>
               <span class="font-cinzel text-xl md:text-2xl font-black text-white drop-shadow">30</span>
@@ -104,7 +88,7 @@
                 雲端即時連線中
               </span>
             </div>
-            <h1 class="text-lg md:text-2xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">30 周年慶祝福牆</h1>
+            <h1 class="text-lg md:text-2xl font-bold font-serifTc text-stone-900 tracking-wide mt-0.5">30 周年祝福牆</h1>
           </div>
         </div>
 
@@ -114,13 +98,12 @@
             <span id="wish-counter-mobile" class="text-sm font-black font-mono">0</span>
           </div>
           <!-- 手機版管理登入按鈕 -->
-          <button onclick="toggleAdminAuth()" class="p-2 bg-stone-100 rounded-xl text-stone-600 border border-stone-200">
+          <button onclick="toggleAdminAuth()" class="p-1.5 bg-stone-100 rounded-lg text-stone-600">
             <i id="admin-login-icon-mob" data-lucide="shield" class="w-4 h-4"></i>
           </button>
         </div>
       </div>
 
-      <!-- 電腦版操作按鈕 -->
       <div class="hidden lg:flex items-center gap-2.5">
         <div class="px-3.5 py-2 bg-amber-50/80 border border-amber-200/80 rounded-xl flex items-center gap-2 text-stone-700 shadow-xs">
           <i data-lucide="sparkles" class="w-4 h-4 text-amber-600"></i>
@@ -135,9 +118,9 @@
         <button onclick="openSenderModal()" class="px-4 py-2 rounded-xl text-sm font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-md transition flex items-center gap-1.5">
           <i data-lucide="edit-3" class="w-4 h-4"></i><span>送上祝福</span>
         </button>
-        <!-- 管理員登入按鈕 -->
-        <button onclick="toggleAdminAuth()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-stone-100 border border-stone-200 hover:bg-stone-200 text-stone-700 transition flex items-center gap-1.5">
-          <i id="admin-login-icon-desk" data-lucide="shield" class="w-3.5 h-3.5 text-amber-600"></i>
+        <!-- 電腦版管理登入按鈕 -->
+        <button onclick="toggleAdminAuth()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-stone-100 border border-stone-200 hover:bg-stone-200 text-stone-600 transition flex items-center gap-1.5">
+          <i id="admin-login-icon-desk" data-lucide="shield" class="w-3.5 h-3.5 text-stone-500"></i>
           <span id="admin-login-text-desk">管理登入</span>
         </button>
         <button onclick="toggleFullScreen()" class="p-2 rounded-xl text-stone-600 bg-white border border-stone-200 hover:bg-amber-50 transition">
@@ -147,7 +130,6 @@
     </div>
   </header>
 
-  <!-- 身分篩選與搜尋欄 -->
   <section class="relative z-10 max-w-7xl mx-auto w-full px-4 pt-4 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3">
     <div class="flex items-center gap-2 overflow-x-auto w-full hide-scrollbar pb-1" id="role-filter-group">
       <button onclick="setRoleFilter('ALL')" class="role-btn whitespace-nowrap px-3 py-1.5 rounded-xl border bg-amber-600 text-white font-bold text-xs" data-role="ALL">全部留言</button>
@@ -162,7 +144,6 @@
     </div>
   </section>
 
-  <!-- 主要內容區 (左側留言網格、右側大螢幕 QR Code 看板) -->
   <main class="relative z-10 flex-1 p-4 md:p-8 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full">
     <section class="flex-1 w-full">
       <div id="wishes-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6 auto-rows-max transition-all"></div>
@@ -175,7 +156,6 @@
       </div>
     </section>
 
-    <!-- 右側常駐 QR Code 看板 (點擊可放大投影) -->
     <aside class="hidden lg:flex w-80 flex-shrink-0 flex-col gap-4">
       <div class="sticky top-24 bg-white/85 backdrop-blur-md rounded-3xl p-6 border border-amber-900/10 shadow-xl text-center flex flex-col items-center">
         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold bg-amber-100/70 text-amber-800 border border-amber-200 mb-3">
@@ -183,29 +163,20 @@
         </span>
         <h2 class="text-lg font-bold text-stone-800 font-serifTc">淡江教科 30th 祝願集結</h2>
         <p class="text-xs text-stone-500 mt-1 mb-4 leading-relaxed">相機對準條碼即可留言</p>
-        
-        <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative" onclick="openQrModal()">
+        <div class="p-3 bg-white rounded-2xl shadow-md border border-stone-200/80 cursor-pointer group relative">
           <div id="qrcode-display" class="flex justify-center items-center"></div>
-          <div class="absolute inset-0 bg-stone-900/50 opacity-0 group-hover:opacity-100 rounded-2xl flex items-center justify-center text-white text-xs font-semibold transition backdrop-blur-xs">
-            點擊放大
-          </div>
         </div>
-        
-        <p class="text-[11px] text-stone-400 mt-3 flex items-center gap-1">
-          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500"></i> 免下載 App・同步大螢幕
-        </p>
       </div>
     </aside>
   </main>
 
-  <!-- 手機版浮動留言按鈕 (FAB) -->
   <button onclick="openSenderModal()" class="lg:hidden fixed bottom-6 right-6 w-14 h-14 bg-amber-600 text-white rounded-full shadow-2xl flex items-center justify-center active:scale-95 transition-transform z-40 border-2 border-amber-200">
     <i data-lucide="edit-3" class="w-6 h-6"></i>
   </button>
 
-  <!-- 留言互動視窗 Modal -->
+  <!-- 發送留言 Modal -->
   <div id="sender-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm hidden flex items-end md:items-center justify-center p-0 md:p-4 transition-opacity">
-    <div class="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto animate-popNote">
+    <div class="bg-white w-full md:max-w-lg rounded-t-3xl md:rounded-3xl p-5 md:p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
       <div class="w-12 h-1.5 bg-stone-200 rounded-full mx-auto mb-4 md:hidden"></div>
       
       <div class="flex items-center justify-between pb-3 border-b border-stone-100">
@@ -261,57 +232,18 @@
         </div>
 
         <button type="submit" class="w-full py-3.5 bg-amber-600 text-white font-bold rounded-xl shadow-lg mt-2 flex items-center justify-center gap-2 active:bg-amber-700">
-          <i data-lucide="send" class="w-5 h-5"></i> 送上祝福上大螢幕
+          <i data-lucide="send" class="w-5 h-5"></i> 送出祝福上大螢幕
         </button>
       </form>
     </div>
   </div>
 
-  <!-- 卡片放大檢視 Modal -->
-  <div id="magnify-modal" class="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
-    <div class="relative w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl transition-all transform animate-popNote" id="magnify-card-content">
-      <div class="washi-tape"></div>
-      <button onclick="closeMagnifyModal()" class="absolute top-3 right-3 text-stone-400 bg-white/50 p-2 rounded-full hover:bg-white"><i data-lucide="x" class="w-6 h-6"></i></button>
-
-      <div class="flex items-center gap-3.5 mb-4 mt-2">
-        <span id="mag-avatar" class="w-12 h-12 rounded-2xl text-2xl flex items-center justify-center bg-white/80 shadow-xs border border-black/5"></span>
-        <div>
-          <h4 id="mag-name" class="text-lg md:text-xl font-bold text-stone-800 font-serifTc"></h4>
-          <span id="mag-role" class="text-xs px-2.5 py-0.5 rounded-md font-bold mt-1 inline-block"></span>
-        </div>
-      </div>
-
-      <div class="p-4 bg-white/60 rounded-2xl border border-black/5 mb-4">
-        <p id="mag-text" class="text-stone-800 text-base md:text-lg leading-relaxed font-warm whitespace-pre-wrap"></p>
-      </div>
-
-      <div class="flex justify-end gap-2">
-        <button id="mag-like-btn" class="px-4 py-2 rounded-xl bg-white/90 text-rose-600 font-bold text-sm shadow-xs border border-rose-100 flex items-center gap-1.5 active:scale-95">
-          <i data-lucide="heart" class="w-4 h-4 fill-rose-500 text-rose-500"></i>
-          <span id="mag-like-count">送上愛心</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- QR Code 巨幅投影展示彈窗 -->
-  <div id="qr-modal" class="fixed inset-0 z-50 bg-stone-950/80 backdrop-blur-md hidden flex items-center justify-center p-6">
-    <div class="bg-white rounded-3xl p-8 max-w-sm w-full text-center relative shadow-2xl animate-popNote">
-      <button onclick="closeQrModal()" class="absolute top-4 right-4 text-stone-400 p-2 bg-stone-100 rounded-full hover:bg-stone-200"><i data-lucide="x" class="w-5 h-5"></i></button>
-      <h3 class="text-xl font-bold font-serifTc text-stone-800 mt-2">掃碼送祝福</h3>
-      <p class="text-stone-500 text-xs mt-1 mb-5">免下載App，手機直接留言上牆</p>
-      <div class="p-4 bg-amber-50 rounded-2xl inline-block border border-amber-200">
-        <div id="qrcode-large" class="mx-auto flex justify-center"></div>
-      </div>
-    </div>
-  </div>
-
   <!-- 管理員登入 Modal -->
   <div id="admin-modal" class="fixed inset-0 z-[60] bg-stone-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 transition-opacity">
-    <div class="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm relative animate-popNote">
+    <div class="bg-white rounded-3xl p-6 shadow-2xl w-full max-w-sm relative">
       <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-stone-400 hover:text-stone-600 p-2"><i data-lucide="x" class="w-5 h-5"></i></button>
       <h3 class="font-bold text-stone-800 text-lg font-serifTc mb-4 flex items-center gap-2">
-        <i data-lucide="shield-check" class="w-5 h-5 text-amber-600"></i> 後台管理登入
+        <i data-lucide="shield-check" class="w-5 h-5 text-amber-600"></i> 留言牆後台管理
       </h3>
       <div class="space-y-3">
         <div>
@@ -354,7 +286,7 @@
     window.wishesRef = ref(db, "tku30_wishes");
     window.dbPush = push;
     window.dbUpdate = update;
-    window.dbRemove = remove;
+    window.dbRemove = remove; // 引入刪除功能
     window.dbRef = ref;
 
     onValue(window.wishesRef, (snapshot) => {
@@ -390,6 +322,7 @@
     let autoScrollInterval = null;
     let isAutoScrolling = false;
     
+    // 管理員登入狀態 (存於 Session，關閉網頁即登出)
     let isAdminLoggedIn = sessionStorage.getItem('isAdmin') === 'true';
 
     function init() {
@@ -401,6 +334,7 @@
       lucide.createIcons();
     }
 
+    // 更新管理員介面狀態
     function updateAdminUI() {
       const deskText = document.getElementById('admin-login-text-desk');
       if (deskText) deskText.innerText = isAdminLoggedIn ? '管理登出' : '管理登入';
@@ -414,13 +348,14 @@
       lucide.createIcons();
     }
 
+    // 管理員登入控制
     function toggleAdminAuth() {
       if (isAdminLoggedIn) {
         if (confirm("確定要登出管理員嗎？")) {
           isAdminLoggedIn = false;
           sessionStorage.removeItem('isAdmin');
           updateAdminUI();
-          renderWishes();
+          renderWishes(); // 重新渲染隱藏刪除按鈕
         }
       } else {
         document.getElementById('admin-modal').classList.remove('hidden');
@@ -430,18 +365,21 @@
       }
     }
     
-    function closeAdminModal() { document.getElementById('admin-modal').classList.add('hidden'); }
+    function closeAdminModal() { 
+      document.getElementById('admin-modal').classList.add('hidden'); 
+    }
 
     function handleAdminLogin() {
       const u = document.getElementById('admin-username').value.trim();
       const p = document.getElementById('admin-password').value.trim();
       
+      // 驗證預設帳號密碼
       if (u === 'TKUET30HBD' && p === 'Tkuet30hbd') {
         isAdminLoggedIn = true;
         sessionStorage.setItem('isAdmin', 'true');
         closeAdminModal();
         updateAdminUI();
-        renderWishes();
+        renderWishes(); // 重新渲染顯示刪除按鈕
       } else {
         document.getElementById('admin-error').classList.remove('hidden');
       }
@@ -471,8 +409,8 @@
       container.innerHTML = visible.map((item) => {
         const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
         return `
-          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-4 md:p-5 shadow-sm relative cursor-pointer group flex flex-col justify-between"
-               style="transform: rotate(${item.rotation || 0}deg);" onclick="openMagnifyModal('${item.id}')">
+          <div class="wishing-card ${theme.bg} ${theme.border} border-2 rounded-2xl p-4 md:p-5 shadow-sm relative cursor-pointer"
+               style="transform: rotate(${item.rotation || 0}deg);">
             <div class="washi-tape"></div>
             <div>
               <div class="flex items-center justify-between gap-2 mb-3 pt-1">
@@ -487,21 +425,18 @@
               <p class="text-stone-800 text-sm leading-relaxed font-warm whitespace-pre-line mb-3">${escapeHtml(item.message)}</p>
             </div>
             
-            <div class="flex justify-between items-center text-xs pt-2.5 border-t border-black/5">
-              <span class="text-[11px] text-stone-400 group-hover:text-amber-800 transition">點擊放大檢視</span>
-              
-              <div class="flex items-center gap-2" onclick="event.stopPropagation()">
-                ${isAdminLoggedIn ? `
-                  <button onclick="deleteCard(event, '${item.id}')" class="flex items-center gap-1 hover:text-rose-600 transition px-2 py-1 rounded-lg bg-white/60 hover:bg-rose-50 text-stone-600 border border-stone-200">
-                    <i data-lucide="trash-2" class="w-3.5 h-3.5 text-rose-500"></i>刪除
-                  </button>
-                ` : ''}
-                
-                <button onclick="likeCard(event, '${item.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
-                  <i data-lucide="heart" class="w-4 h-4 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
-                  <span class="text-xs font-bold text-rose-500">${item.likes || 0}</span>
+            <div class="flex justify-end items-center text-xs pt-2.5 border-t border-black/5 gap-2">
+              <!-- 只有管理員登入後才會渲染這顆刪除按鈕 -->
+              ${isAdminLoggedIn ? `
+                <button onclick="deleteCard(event, '${item.id}')" class="flex items-center gap-1 hover:text-rose-600 transition px-2 py-1 rounded-lg bg-white/50 hover:bg-rose-50 text-stone-500">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>刪除
                 </button>
-              </div>
+              ` : ''}
+              
+              <button onclick="likeCard(event, '${item.id}')" class="flex items-center gap-1.5 hover:text-rose-500 transition px-2 py-1 rounded-lg hover:bg-white/60">
+                <i data-lucide="heart" class="w-4 h-4 ${item.likes > 0 ? 'text-rose-500 fill-rose-500' : ''}"></i>
+                <span class="text-xs font-bold text-rose-500">${item.likes || 0}</span>
+              </button>
             </div>
           </div>
         `;
@@ -568,35 +503,21 @@
       }
     }
 
+    // 管理員專用：刪除卡片
     async function deleteCard(e, id) {
       e.stopPropagation();
-      if (!isAdminLoggedIn) return;
-      if (confirm("確定要刪除這則祝福留言嗎？")) {
+      if (!isAdminLoggedIn) return; // 雙重防護
+      
+      if (confirm("確定要刪除這則留言嗎？(刪除後無法復原)")) {
         try {
           const itemRef = window.dbRef(window.db, `tku30_wishes/${id}`);
           await window.dbRemove(itemRef);
         } catch(err) {
           console.error("刪除失敗", err);
-          alert("刪除失敗，請檢查權限。");
+          alert("刪除失敗，請檢查資料庫規則是否開放讀寫。");
         }
       }
     }
-
-    function openMagnifyModal(id) {
-      const item = window.wishes.find(w => w.id === id); if(!item) return;
-      const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
-      document.getElementById('magnify-card-content').className = `relative w-full max-w-lg rounded-3xl p-6 md:p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
-      document.getElementById('mag-avatar').innerText = item.emoji || '🎓';
-      document.getElementById('mag-name').innerText = item.author;
-      document.getElementById('mag-role').innerText = item.role;
-      document.getElementById('mag-role').className = `text-xs px-2.5 py-0.5 rounded-md font-bold mt-1 inline-block ${theme.badgeBg} ${theme.badgeText}`;
-      document.getElementById('mag-text').innerText = item.message;
-      document.getElementById('mag-like-count').innerText = `送上愛心 (${item.likes || 0})`;
-      document.getElementById('mag-like-btn').onclick = (e) => { likeCard(e, item.id); document.getElementById('mag-like-count').innerText = `送上愛心 (${(item.likes||0)+1})`; };
-      document.getElementById('magnify-modal').classList.remove('hidden');
-      lucide.createIcons();
-    }
-    function closeMagnifyModal() { document.getElementById('magnify-modal').classList.add('hidden'); }
 
     function setupColorSelector() {
       document.getElementById('color-selector').innerHTML = CARD_THEMES.map(t => `<button type="button" onclick="selectTheme('${t.id}')" class="w-8 h-8 rounded-full ${t.bg} ${t.border} border-2 flex items-center justify-center">${t.id === selectedThemeId ? '<i data-lucide="check" class="w-4 h-4 text-stone-800"></i>' : ''}</button>`).join('');
@@ -609,16 +530,12 @@
     function selectEmoji(emo) { selectedEmoji = emo; setupEmojiSelector(); }
     function updateCharCount() { document.getElementById('char-count').innerText = `${document.getElementById('input-message').value.length}/150`; }
     function applyPreset(text) { document.getElementById('input-message').value = text; updateCharCount(); }
-    
     function openSenderModal() { document.getElementById('sender-modal').classList.remove('hidden'); }
     function closeSenderModal() { document.getElementById('sender-modal').classList.add('hidden'); }
-    function openQrModal() { document.getElementById('qr-modal').classList.remove('hidden'); }
-    function closeQrModal() { document.getElementById('qr-modal').classList.add('hidden'); }
 
     function initQRCodes() {
       const url = window.location.href;
       if(document.getElementById('qrcode-display')) new QRCode(document.getElementById('qrcode-display'), { text: url, width: 120, height: 120, colorDark: '#451A03', colorLight: '#ffffff' });
-      if(document.getElementById('qrcode-large')) new QRCode(document.getElementById('qrcode-large'), { text: url, width: 220, height: 220, colorDark: '#451A03', colorLight: '#ffffff' });
     }
 
     function toggleAutoScroll() {

@@ -140,7 +140,7 @@
       <div class="flex items-center gap-3.5">
         <!-- 30週年紀念徽章 -->
         <div class="relative animate-floatBadge">
-          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex flex-col items-center justify-center text-white shadow-lg shadow-amber-600/25 border-2 border-amber-200">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 via-amber-600 to-amber-800 flex flex-col items-center justify-center text-white shadow-lg shadow-amber-600/25 border-2 border-amber-200 cursor-pointer" onclick="handleBadgeClick()">
             <span class="font-cinzel text-xs font-semibold leading-none tracking-widest text-amber-200">TKU</span>
             <span class="font-cinzel text-2xl font-black leading-tight text-white drop-shadow">30</span>
             <span class="text-[9px] font-bold tracking-tighter text-amber-100">ANNIVERSARY</span>
@@ -180,7 +180,7 @@
         </div>
 
         <!-- 舞台自動輪播滾動 -->
-        <button id="toggle-autoscroll" onclick="toggleAutoScroll()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 hover:border-amber-400 hover:bg-amber-50 text-stone-700 transition flex items-center gap-1.5 shadow-xs">
+        <button onclick="toggleAutoScroll()" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-white border border-stone-200 hover:border-amber-400 hover:bg-amber-50 text-stone-700 transition flex items-center gap-1.5 shadow-xs">
           <i data-lucide="play" id="autoscroll-icon" class="w-3.5 h-3.5 text-amber-600"></i>
           <span id="autoscroll-label">舞台輪播</span>
         </button>
@@ -628,90 +628,99 @@
     </div>
   </div>
 
-  <!-- Firebase JavaScript SDK Modular Setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
     import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { 
-      getFirestore, 
-      collection, 
-      doc, 
-      setDoc, 
-      updateDoc, 
-      deleteDoc, 
-      onSnapshot, 
-      getDocs 
+      getFirestore, collection, doc, addDoc, setDoc, updateDoc, deleteDoc, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // 環境變數讀取
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'tku-et-30th-wishing-wall';
+    // Setup provided environment variables
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-tku-app-id';
     const firebaseConfig = typeof __firebase_config !== 'undefined' 
       ? JSON.parse(__firebase_config) 
-      : {
-          apiKey: "demo-key",
-          authDomain: "demo.firebaseapp.com",
-          projectId: "demo-project",
-          storageBucket: "demo.appspot.com",
-          messagingSenderId: "000000000000",
-          appId: "1:000000000000:web:000000000000"
-        };
+      : {}; 
 
-    // 初始化 Firebase
+    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // 全局變數暴露
-    window.db = db;
-    window.auth = auth;
-    window.appId = appId;
-    window.collection = collection;
-    window.doc = doc;
-    window.setDoc = setDoc;
-    window.updateDoc = updateDoc;
-    window.deleteDoc = deleteDoc;
-    window.getDocs = getDocs;
+    // Strict Paths Requirement
+    // Public Data (Sharing with other users)
+    const getWishesCollection = () => collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
+    const getWishDoc = (docId) => doc(db, 'artifacts', appId, 'public', 'data', 'wishes', docId);
+    const getSettingsDoc = () => doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
 
-    // 定義存取 Firestore 集合路徑
-    const wishesCollectionRef = collection(db, 'artifacts', appId, 'public', 'data', 'wishes');
-    const settingsDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'settings', 'config');
+    // Make global variables for interactions inside vanilla JS
+    window.wishes = [];
+    window.isAutoModerateEnabled = false;
 
-    // 進行身份認證
+    // Constants
+    const ADMIN_SESSION_KEY = 'tku_et_30th_admin_authed';
+    const VALID_PASSWORDS = ['tku30'];
+
+    const CARD_THEMES = [
+      { id: 'yellow', name: '暖杏黃', bg: 'bg-[#FEF7D8]', border: 'border-[#EEDFA3]', text: 'text-amber-950', badgeBg: 'bg-amber-200/70', badgeText: 'text-amber-900' },
+      { id: 'pink', name: '淡櫻粉', bg: 'bg-[#FCE7E9]', border: 'border-[#EFC4C9]', text: 'text-rose-950', badgeBg: 'bg-rose-200/70', badgeText: 'text-rose-900' },
+      { id: 'green', name: '薄荷綠', bg: 'bg-[#E7F5EC]', border: 'border-[#C8E8D2]', text: 'text-emerald-950', badgeBg: 'bg-emerald-200/70', badgeText: 'text-emerald-900' },
+      { id: 'blue', name: '晨曦藍', bg: 'bg-[#E3F2FD]', border: 'border-[#BEDCF5]', text: 'text-sky-950', badgeBg: 'bg-sky-200/70', badgeText: 'text-sky-900' },
+      { id: 'purple', name: '薰衣紫', bg: 'bg-[#EFEAFF]', border: 'border-[#D9CDF7]', text: 'text-purple-950', badgeBg: 'bg-purple-200/70', badgeText: 'text-purple-900' }
+    ];
+
+    const EMOJIS = ['🎓', '🎂', '✨', '❤️', '🚀', '🌱', '🎉', '💡'];
+
+    // State Variables
+    let selectedEmoji = '🎓';
+    let selectedThemeId = 'yellow';
+    let isAutoScrolling = false;
+    let autoScrollInterval = null;
+    let currentRoleFilter = 'ALL';
+    let currentSearchKeyword = '';
+    let isAdminOpen = false;
+    let isAdminAuthenticated = false;
+    let currentAdminTab = 'moderation';
+    let currentAdminStatusFilter = 'ALL';
+    let autoSimInterval = null;
+    let badgeClickCount = 0;
+    let badgeClickTimer = null;
+
+    // Authentication and DB Listener
     async function initAuthAndData() {
       try {
+        // Authenticate FIRST (Rule #3)
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
           await signInWithCustomToken(auth, __initial_auth_token);
         } else {
           await signInAnonymously(auth);
         }
 
-        // 監聽即時數據變動 (跨裝置同步)
-        onSnapshot(wishesCollectionRef, (snapshot) => {
+        if (!auth.currentUser) return;
+
+        // Setup real-time listeners for exact paths
+        onSnapshot(getWishesCollection(), (snapshot) => {
           const cloudWishes = [];
           snapshot.forEach((document) => {
             cloudWishes.push({ id: document.id, ...document.data() });
           });
 
-          // 若資料庫完全沒有初始資料，則寫入預設祝福內容
+          // Sort wishes locally memory-side (No complex queries requirement #2)
+          cloudWishes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+          window.wishes = cloudWishes;
+
           if (cloudWishes.length === 0 && !window.hasInitializedDefault) {
             window.hasInitializedDefault = true;
             seedDefaultWishes();
             return;
           }
 
-          // 按創建時間逆序排序
-          cloudWishes.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-          window.wishes = cloudWishes;
-
-          // 重新渲染畫面與後台
-          if (window.renderWishes) window.renderWishes();
-          if (window.updateAdminDashboard) window.updateAdminDashboard();
+          renderWishes();
+          updateAdminDashboard();
         }, (error) => {
           console.error("Firestore wishes stream error:", error);
         });
 
-        // 監聽設定變動
-        onSnapshot(settingsDocRef, (docSnap) => {
+        onSnapshot(getSettingsDoc(), (docSnap) => {
           if (docSnap.exists()) {
             const data = docSnap.data();
             window.isAutoModerateEnabled = !!data.autoModerate;
@@ -731,149 +740,70 @@
       }
     }
 
-    // 預設示範資料初始化寫入
+    // Default Wishes Seeder
     async function seedDefaultWishes() {
+      if (!auth.currentUser) return;
       const DEFAULT_WISHES = [
         {
-          author: '第5屆系友 家銘',
-          role: '畢業系友',
-          message: '不敢相信教科系已經 30 歲了！當年坐在工學大樓電腦教室敲鍵盤、剪教學影帶的時光歷歷在目。謝謝系上老師們當年的扎實啟發，祝教科系 30 週年生日快樂！',
-          emoji: '🎂',
-          themeId: 'yellow',
-          timestamp: '剛剛',
-          rotation: -1.2,
-          likes: 18,
-          status: 'APPROVED',
-          isPinned: true,
-          createdAt: Date.now() - 1000
+          author: '第5屆系友 家銘', role: '畢業系友', message: '不敢相信教科系已經 30 歲了！當年坐在電腦教室敲鍵盤的時光歷歷在目。祝教科系 30 週年生日快樂！', emoji: '🎂', themeId: 'yellow', timestamp: '剛剛', rotation: -1.2, likes: 18, status: 'APPROVED', isPinned: true, createdAt: Date.now() - 1000
         },
         {
-          author: '系主任與全體教師',
-          role: '系上師長',
-          message: '三十而立，智慧傳承。從多媒體輔助教學一路跨越到生成式 AI 時代，感謝所有系友在教育與產業界的發光發熱，教科系永遠是大家最堅實溫暖的後盾！',
-          emoji: '🌱',
-          themeId: 'green',
-          timestamp: '5分鐘前',
-          rotation: 1.4,
-          likes: 32,
-          status: 'APPROVED',
-          isPinned: true,
-          createdAt: Date.now() - 2000
-        },
-        {
-          author: '大四專題生 庭萱',
-          role: '教科在校生',
-          message: '在教科系四年的學習充滿挑戰與驚喜，畢業專題雖然累但真的學到超多數位學習技能。祝我們教科系 30 歲生日快樂，也祝我們這屆畢業順利！🎓✨',
-          emoji: '🎓',
-          themeId: 'pink',
-          timestamp: '12分鐘前',
-          rotation: -0.9,
-          likes: 14,
-          status: 'APPROVED',
-          isPinned: false,
-          createdAt: Date.now() - 3000
-        },
-        {
-          author: '第18屆 佩佩',
-          role: '畢業系友',
-          message: '今天特地回淡水走宮燈大道與文館，看到好多熟悉的老師與學弟妹！教科人的凝聚力真的永遠滿分！下個三十年繼續加油～🥂❤️',
-          emoji: '❤️',
-          themeId: 'purple',
-          timestamp: '20分鐘前',
-          rotation: 1.1,
-          likes: 21,
-          status: 'APPROVED',
-          isPinned: false,
-          createdAt: Date.now() - 4000
-        },
-        {
-          author: '資工系友會代表',
-          role: '貴賓好友',
-          message: '恭喜教育科技學系 30 周年慶典圓滿成功！期待在教育科技與跨域數位創新的路上，繼續攜手並進！🚀',
-          emoji: '🚀',
-          themeId: 'blue',
-          timestamp: '35分鐘前',
-          rotation: -1.5,
-          likes: 9,
-          status: 'APPROVED',
-          isPinned: false,
-          createdAt: Date.now() - 5000
+          author: '大四專題生 庭萱', role: '教科在校生', message: '在教科系四年的學習充滿挑戰與驚喜，祝我們教科系 30 歲生日快樂，也祝我們這屆畢業順利！🎓✨', emoji: '🎓', themeId: 'pink', timestamp: '12分鐘前', rotation: -0.9, likes: 14, status: 'APPROVED', isPinned: false, createdAt: Date.now() - 2000
         }
       ];
 
       for (const wish of DEFAULT_WISHES) {
-        const newRef = doc(wishesCollectionRef);
-        await setDoc(newRef, wish);
+        try {
+          await addDoc(getWishesCollection(), wish);
+        } catch(e) {}
       }
     }
 
-    // 啟動認證與資料流監聽
-    initAuthAndData();
-  </script>
+    // Exported helper methods for inline HTML
+    window.handleBadgeClick = () => {
+      badgeClickCount++;
+      clearTimeout(badgeClickTimer);
+      badgeClickTimer = setTimeout(() => { badgeClickCount = 0; }, 2000);
 
-  <script>
-    // 常數與全域設定
-    const ADMIN_SESSION_KEY = 'tku_et_30th_admin_authed';
-    const VALID_PASSWORDS = ['tku30', 'et30', 'tku30th'];
+      if (badgeClickCount >= 5) {
+        badgeClickCount = 0;
+        window.promptAdminPassword();
+      }
+    };
 
-    // 卡片主題色調（柔和紙質色系）
-    const CARD_THEMES = [
-      { id: 'yellow', name: '暖杏黃', bg: 'bg-[#FEF7D8]', border: 'border-[#EEDFA3]', text: 'text-amber-950', badgeBg: 'bg-amber-200/70', badgeText: 'text-amber-900' },
-      { id: 'pink', name: '淡櫻粉', bg: 'bg-[#FCE7E9]', border: 'border-[#EFC4C9]', text: 'text-rose-950', badgeBg: 'bg-rose-200/70', badgeText: 'text-rose-900' },
-      { id: 'green', name: '薄荷綠', bg: 'bg-[#E7F5EC]', border: 'border-[#C8E8D2]', text: 'text-emerald-950', badgeBg: 'bg-emerald-200/70', badgeText: 'text-emerald-900' },
-      { id: 'blue', name: '晨曦藍', bg: 'bg-[#E3F2FD]', border: 'border-[#BEDCF5]', text: 'text-sky-950', badgeBg: 'bg-sky-200/70', badgeText: 'text-sky-900' },
-      { id: 'purple', name: '薰衣紫', bg: 'bg-[#EFEAFF]', border: 'border-[#D9CDF7]', text: 'text-purple-950', badgeBg: 'bg-purple-200/70', badgeText: 'text-purple-900' }
-    ];
+    window.promptAdminPassword = () => {
+      if (isAdminAuthenticated) {
+        window.toggleAdminDrawer();
+        return;
+      }
+      document.getElementById('pass-error-msg').classList.add('hidden');
+      document.getElementById('admin-pass-input').value = '';
+      document.getElementById('password-modal').classList.remove('hidden');
+      setTimeout(() => { document.getElementById('admin-pass-input').focus(); }, 100);
+    };
 
-    const EMOJIS = ['🎓', '🎂', '✨', '❤️', '🚀', '🌱', '🎉', '💡'];
+    window.closePasswordModal = () => document.getElementById('password-modal').classList.add('hidden');
 
-    window.wishes = [];
-    let selectedEmoji = '🎓';
-    let selectedThemeId = 'yellow';
-    let isAutoScrolling = false;
-    let autoScrollInterval = null;
-    
-    // Live Stream Filters
-    let currentRoleFilter = 'ALL';
-    let currentSearchKeyword = '';
-
-    // Admin Panel States
-    let isAdminOpen = false;
-    let isAdminAuthenticated = false;
-    let currentAdminTab = 'moderation';
-    let currentAdminStatusFilter = 'ALL';
-    window.isAutoModerateEnabled = false; 
-    let autoSimInterval = null;
-
-    // 徽章點擊計數器 (隱藏式觸發解鎖)
-    let badgeClickCount = 0;
-    let badgeClickTimer = null;
-
-    // 初始化應用程式
-    function init() {
-      checkAdminPermission();
-      setupBadgeSecretClick();
-      setupColorSelector();
-      setupEmojiSelector();
-      initQRCodes();
-      initParticles();
-      lucide.createIcons();
-    }
-
-    // 檢查管理員授權狀態 (從 URL 參數或 Session)
-    function checkAdminPermission() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const isGuestMode = urlParams.get('role') === 'guest';
-      const sessionAuth = sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
-
-      if (!isGuestMode && sessionAuth) {
+    window.handlePasswordSubmit = (e) => {
+      e.preventDefault();
+      const pwd = document.getElementById('admin-pass-input').value.trim().toLowerCase();
+      if (VALID_PASSWORDS.includes(pwd)) {
         isAdminAuthenticated = true;
+        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
+        updateAdminUI();
+        window.closePasswordModal();
+        window.toggleAdminDrawer();
+        confetti({ particleCount: 50, spread: 60, origin: { y: 0.2 } });
       } else {
-        isAdminAuthenticated = false;
+        document.getElementById('pass-error-msg').classList.remove('hidden');
       }
+    };
 
+    window.lockAdminSession = () => {
+      isAdminAuthenticated = false;
+      sessionStorage.removeItem(ADMIN_SESSION_KEY);
       updateAdminUI();
-    }
+    };
 
     function updateAdminUI() {
       const adminBtn = document.getElementById('admin-portal-btn');
@@ -886,152 +816,69 @@
         if (adminBtn) adminBtn.classList.add('hidden');
         if (unlockBtn) unlockBtn.classList.remove('hidden');
         if (isAdminOpen) {
-          toggleAdminDrawer();
+          window.toggleAdminDrawer();
         }
       }
     }
 
-    // 連擊 30 週年徽章 5 次解鎖驗證
-    function setupBadgeSecretClick() {
-      const badge = document.querySelector('.animate-floatBadge');
-      if (!badge) return;
-      badge.classList.add('cursor-pointer');
-      badge.addEventListener('click', () => {
-        badgeClickCount++;
-        clearTimeout(badgeClickTimer);
-        badgeClickTimer = setTimeout(() => {
-          badgeClickCount = 0;
-        }, 2000);
-
-        if (badgeClickCount >= 5) {
-          badgeClickCount = 0;
-          promptAdminPassword();
-        }
-      });
-    }
-
-    function promptAdminPassword() {
-      if (isAdminAuthenticated) {
-        toggleAdminDrawer();
-        return;
-      }
-      document.getElementById('pass-error-msg').classList.add('hidden');
-      document.getElementById('admin-pass-input').value = '';
-      document.getElementById('password-modal').classList.remove('hidden');
-      setTimeout(() => {
-        document.getElementById('admin-pass-input').focus();
-      }, 100);
-    }
-
-    function closePasswordModal() {
-      document.getElementById('password-modal').classList.add('hidden');
-    }
-
-    function handlePasswordSubmit(e) {
-      e.preventDefault();
-      const pwd = document.getElementById('admin-pass-input').value.trim().toLowerCase();
-      if (VALID_PASSWORDS.includes(pwd)) {
-        isAdminAuthenticated = true;
-        sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
-        updateAdminUI();
-        closePasswordModal();
-        toggleAdminDrawer();
-        confetti({
-          particleCount: 50,
-          spread: 60,
-          origin: { y: 0.2 }
-        });
-      } else {
-        document.getElementById('pass-error-msg').classList.remove('hidden');
-      }
-    }
-
-    function lockAdminSession() {
-      isAdminAuthenticated = false;
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-      updateAdminUI();
-    }
-
-    // 產生 QR Code 時強制寫入訪客網址 (?role=guest)
+    // QR Codes Functionality
     function initQRCodes() {
-      const rawUrl = new URL(window.location.href);
-      rawUrl.searchParams.set('role', 'guest');
-      const guestUrl = rawUrl.toString();
-
-      document.getElementById('custom-qr-url').value = guestUrl;
-      generateQRCodes(guestUrl);
+      const url = window.location.href;
+      document.getElementById('custom-qr-url').value = url;
+      generateQRCodes(url);
     }
 
     function generateQRCodes(url) {
       const sideContainer = document.getElementById('qrcode-display');
       sideContainer.innerHTML = '';
-      new QRCode(sideContainer, {
-        text: url,
-        width: 140,
-        height: 140,
-        colorDark: '#451A03',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
+      new QRCode(sideContainer, { text: url, width: 140, height: 140, colorDark: '#451A03', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
 
       const largeContainer = document.getElementById('qrcode-large');
       largeContainer.innerHTML = '';
-      new QRCode(largeContainer, {
-        text: url,
-        width: 240,
-        height: 240,
-        colorDark: '#451A03',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.H
-      });
+      new QRCode(largeContainer, { text: url, width: 240, height: 240, colorDark: '#451A03', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.H });
     }
 
-    function updateQrUrl() {
+    window.updateQrUrl = () => {
       const input = document.getElementById('custom-qr-url');
       const val = input.value.trim();
-      if (val) {
-        generateQRCodes(val);
-      }
-    }
+      if (val) generateQRCodes(val);
+    };
+    
+    window.openQrModal = () => document.getElementById('qr-modal').classList.remove('hidden');
+    window.closeQrModal = () => document.getElementById('qr-modal').classList.add('hidden');
 
-    // Web Audio API 音效
+    // Chime Sound Notification (Graceful fallback)
     function playChimeSound() {
       const soundEnabled = document.getElementById('setting-sound')?.checked;
       if (soundEnabled === false) return;
-
       try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         const now = audioCtx.currentTime;
-        
         const notes = [1046.50, 1318.51, 1567.98];
         notes.forEach((freq, idx) => {
           const osc = audioCtx.createOscillator();
           const gain = audioCtx.createGain();
           osc.type = 'sine';
           osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-
           gain.gain.setValueAtTime(0.12, now + idx * 0.08);
           gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.08 + 0.6);
-
           osc.connect(gain);
           gain.connect(audioCtx.destination);
-
           osc.start(now + idx * 0.08);
           osc.stop(now + idx * 0.08 + 0.65);
         });
-      } catch (e) {
-        // 音訊受限靜默跳過
-      }
+      } catch (e) { /* silent fail */ }
     }
 
-    // 渲染大螢幕祝福牆卡片
+    // Main Wish Rendering Logic
     function renderWishes() {
       const container = document.getElementById('wishes-container');
       const emptyState = document.getElementById('empty-state');
       const counter = document.getElementById('wish-counter');
 
-      let visible = (window.wishes || []).filter(w => w.status === 'APPROVED');
+      let visible = window.wishes.filter(w => w.status === 'APPROVED');
 
+      // Manual filtering logic (Rule 2 mandates fetching all, parsing local memory)
       if (currentRoleFilter !== 'ALL') {
         visible = visible.filter(w => w.role === currentRoleFilter);
       }
@@ -1044,9 +891,10 @@
         );
       }
 
+      // Pin sort
       visible.sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
 
-      counter.innerText = (window.wishes || []).filter(w => w.status === 'APPROVED').length;
+      counter.innerText = window.wishes.filter(w => w.status === 'APPROVED').length;
 
       if (visible.length === 0) {
         container.innerHTML = '';
@@ -1106,10 +954,9 @@
 
       lucide.createIcons();
     }
-    window.renderWishes = renderWishes;
 
-    // 前端搜尋與篩選操作
-    function setRoleFilter(role) {
+    // Form Submissions
+    window.setRoleFilter = (role) => {
       currentRoleFilter = role;
       document.querySelectorAll('#role-filter-group .role-btn').forEach(btn => {
         if (btn.getAttribute('data-role') === role) {
@@ -1119,79 +966,72 @@
         }
       });
       renderWishes();
-    }
+    };
 
-    function handleSearch(val) {
+    window.handleSearch = (val) => {
       currentSearchKeyword = val.trim();
       renderWishes();
-    }
+    };
 
-    // 即時點讚 (雲端同步)
-    async function likeCard(e, id) {
+    window.likeCard = async (e, id) => {
       e.stopPropagation();
-      const card = (window.wishes || []).find(w => w.id === id);
-      if (card && window.db) {
+      if (!auth.currentUser) return;
+
+      const card = window.wishes.find(w => w.id === id);
+      if (card) {
         const newLikes = (card.likes || 0) + 1;
         try {
-          const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
-          await window.updateDoc(docRef, { likes: newLikes });
-          confetti({
-            particleCount: 25,
-            spread: 45,
-            origin: {
-              x: e.clientX / window.innerWidth,
-              y: e.clientY / window.innerHeight
-            }
-          });
-        } catch (err) {
-          console.error("更新點讚數失敗:", err);
-        }
+          await updateDoc(getWishDoc(id), { likes: newLikes });
+          confetti({ particleCount: 25, spread: 45, origin: { x: e.clientX / window.innerWidth, y: e.clientY / window.innerHeight } });
+        } catch (err) { console.error("Like failed:", err); }
       }
-    }
+    };
 
-    function setupColorSelector() {
+    window.setupColorSelector = () => {
       const container = document.getElementById('color-selector');
       container.innerHTML = CARD_THEMES.map(t => `
         <button type="button" onclick="selectTheme('${t.id}')" class="w-8 h-8 rounded-full ${t.bg} ${t.border} border-2 transition transform hover:scale-110 flex items-center justify-center shadow-xs">
           ${t.id === selectedThemeId ? '<i data-lucide="check" class="w-4 h-4 text-stone-800"></i>' : ''}
         </button>
       `).join('');
-    }
+    };
 
-    function selectTheme(themeId) {
+    window.selectTheme = (themeId) => {
       selectedThemeId = themeId;
-      setupColorSelector();
+      window.setupColorSelector();
       lucide.createIcons();
-    }
+    };
 
-    function setupEmojiSelector() {
+    window.setupEmojiSelector = () => {
       const container = document.getElementById('emoji-selector');
       container.innerHTML = EMOJIS.map(emo => `
         <button type="button" onclick="selectEmoji('${emo}')" class="p-2 text-xl rounded-xl border transition ${selectedEmoji === emo ? 'bg-amber-100 border-amber-400 scale-105 shadow-sm' : 'border-stone-100 hover:bg-stone-50'}">
           ${emo}
         </button>
       `).join('');
-    }
+    };
 
-    function selectEmoji(emo) {
+    window.selectEmoji = (emo) => {
       selectedEmoji = emo;
-      setupEmojiSelector();
-    }
+      window.setupEmojiSelector();
+    };
 
-    function applyPreset(text) {
+    window.applyPreset = (text) => {
       const textarea = document.getElementById('input-message');
       textarea.value = text;
-      updateCharCount();
-    }
+      window.updateCharCount();
+    };
 
-    function updateCharCount() {
+    window.updateCharCount = () => {
       const textarea = document.getElementById('input-message');
       document.getElementById('char-count').innerText = `${textarea.value.length}/150`;
-    }
+    };
 
-    // 表單送出祝福 (雲端同步)
-    async function handleFormSubmit(e) {
+    // Submitting a new wish
+    window.handleFormSubmit = async (e) => {
       e.preventDefault();
+      if (!auth.currentUser) return; // Guard clause
+
       const author = document.getElementById('input-author').value.trim();
       const role = document.getElementById('input-role').value;
       let message = document.getElementById('input-message').value.trim();
@@ -1223,70 +1063,45 @@
       };
 
       try {
-        const newDocRef = window.doc(window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes'));
-        await window.setDoc(newDocRef, newWishData);
-
+        await addDoc(getWishesCollection(), newWishData);
+        
         playChimeSound();
-
         if (isApproved) {
-          confetti({
-            particleCount: 100,
-            spread: 80,
-            origin: { y: 0.6 },
-            colors: ['#D4AF37', '#F59E0B', '#F43F5E', '#10B981', '#6366F1']
-          });
+          confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, colors: ['#D4AF37', '#F59E0B', '#F43F5E', '#10B981', '#6366F1'] });
         }
 
-        closeSenderModal();
+        window.closeSenderModal();
         document.getElementById('wish-form').reset();
-        updateCharCount();
+        window.updateCharCount();
         window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (err) { console.error("Submit failed:", err); }
+    };
 
-      } catch (err) {
-        console.error("送出祝福至雲端資料庫失敗:", err);
-      }
-    }
-
-    // 模擬現場新祝福
-    async function triggerManualSim() {
+    // Simulators
+    window.triggerManualSim = async () => {
+      if (!auth.currentUser) return;
       const demoPool = [
-        { author: '第10屆系友 志偉', role: '畢業系友', message: '看著教科系邁入30周年，內心滿滿驕傲！祝福母系欣欣向榮，培育更多數位教育英才！🎓', emoji: '🎉', themeId: 'yellow' },
+        { author: '第10屆系友 志偉', role: '畢業系友', message: '看著教科系邁入30周年，內心滿滿驕傲！祝福母系欣欣向榮！🎓', emoji: '🎉', themeId: 'yellow' },
         { author: '教育科技碩士班 佳玲', role: '教科在校生', message: '在教科系做研究、學科技教學，每天都很充實！祝教科系 30 歲生日快樂！🎂', emoji: '💡', themeId: 'blue' },
-        { author: '退休教授 敬賀', role: '退休師長', message: '三十年前篳路藍縷，如今開枝散葉。看到教科人的成就深感欣慰，祝福大家平安喜樂！🌱', emoji: '✨', themeId: 'green' },
-        { author: '第22屆 冠宇', role: '畢業系友', message: '文館B208電腦教室永遠有我們的汗水與笑聲！教科30歲快樂！❤️', emoji: '❤️', themeId: 'pink' }
+        { author: '第22屆 冠宇', role: '畢業系友', message: '電腦教室永遠有我們的汗水與笑聲！教科30歲快樂！❤️', emoji: '❤️', themeId: 'pink' }
       ];
 
       const item = demoPool[Math.floor(Math.random() * demoPool.length)];
       const randomRot = parseFloat((Math.random() * 3.6 - 1.8).toFixed(1));
 
       const simWishData = {
-        author: item.author,
-        role: item.role,
-        message: item.message,
-        emoji: item.emoji,
-        themeId: item.themeId,
-        timestamp: '剛剛',
-        rotation: randomRot,
-        likes: Math.floor(Math.random() * 5) + 1,
-        status: window.isAutoModerateEnabled ? 'PENDING' : 'APPROVED',
-        isPinned: false,
-        createdAt: Date.now()
+        ...item, timestamp: '剛剛', rotation: randomRot, likes: Math.floor(Math.random() * 5) + 1,
+        status: window.isAutoModerateEnabled ? 'PENDING' : 'APPROVED', isPinned: false, createdAt: Date.now()
       };
 
       try {
-        const newDocRef = window.doc(window.collection(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes'));
-        await window.setDoc(newDocRef, simWishData);
+        await addDoc(getWishesCollection(), simWishData);
         playChimeSound();
+        if (!window.isAutoModerateEnabled) confetti({ particleCount: 45, spread: 50, origin: { y: 0.5 } });
+      } catch (err) { console.error("Simulation failed", err); }
+    };
 
-        if (!window.isAutoModerateEnabled) {
-          confetti({ particleCount: 45, spread: 50, origin: { y: 0.5 } });
-        }
-      } catch (err) {
-        console.error("模擬新祝福失敗:", err);
-      }
-    }
-
-    function toggleAutoSim() {
+    window.toggleAutoSim = () => {
       const btn = document.getElementById('auto-sim-btn');
       const statusText = document.getElementById('sim-status');
       if (autoSimInterval) {
@@ -1296,17 +1111,17 @@
         statusText.innerText = '靜止';
         statusText.className = 'text-[10px] px-1.5 py-0.5 rounded bg-stone-100 text-stone-500 font-normal';
       } else {
-        triggerManualSim();
-        autoSimInterval = setInterval(triggerManualSim, 7000);
+        window.triggerManualSim();
+        autoSimInterval = setInterval(window.triggerManualSim, 7000);
         btn.className = 'flex-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-lg text-xs transition shadow-xs flex items-center justify-center gap-1';
         statusText.innerText = '自動模擬中';
         statusText.className = 'text-[10px] px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-bold animate-pulse';
       }
       lucide.createIcons();
-    }
+    };
 
-    // 後台 Drawer
-    function toggleAdminDrawer() {
+    // Admin Dashboard
+    window.toggleAdminDrawer = () => {
       const drawer = document.getElementById('admin-drawer');
       isAdminOpen = !isAdminOpen;
       if (isAdminOpen) {
@@ -1315,48 +1130,32 @@
       } else {
         drawer.classList.add('translate-x-full');
       }
-    }
+    };
 
-    function switchAdminTab(tabName) {
+    window.switchAdminTab = (tabName) => {
       currentAdminTab = tabName;
-      document.getElementById('admin-tab-moderation').classList.add('hidden');
-      document.getElementById('admin-tab-stats').classList.add('hidden');
-      document.getElementById('admin-tab-settings').classList.add('hidden');
+      ['moderation', 'stats', 'settings'].forEach(t => {
+        document.getElementById(`admin-tab-${t}`).classList.add('hidden');
+        document.getElementById(`tab-btn-${t}`).className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
+      });
 
-      document.getElementById('tab-btn-moderation').className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
-      document.getElementById('tab-btn-stats').className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
-      document.getElementById('tab-btn-settings').className = 'py-3 px-1 border-b-2 border-transparent text-slate-400 font-bold text-sm hover:text-slate-200 flex items-center gap-1.5';
+      document.getElementById(`admin-tab-${tabName}`).classList.remove('hidden');
+      document.getElementById(`tab-btn-${tabName}`).className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
+    };
 
-      if (tabName === 'moderation') {
-        document.getElementById('admin-tab-moderation').classList.remove('hidden');
-        document.getElementById('tab-btn-moderation').className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
-      } else if (tabName === 'stats') {
-        document.getElementById('admin-tab-stats').classList.remove('hidden');
-        document.getElementById('tab-btn-stats').className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
-      } else if (tabName === 'settings') {
-        document.getElementById('admin-tab-settings').classList.remove('hidden');
-        document.getElementById('tab-btn-settings').className = 'py-3 px-1 border-b-2 border-amber-400 text-amber-400 font-bold text-sm flex items-center gap-1.5';
-      }
-    }
-
-    function setAdminStatusFilter(status) {
+    window.setAdminStatusFilter = (status) => {
       currentAdminStatusFilter = status;
       ['ALL', 'PENDING', 'APPROVED', 'REJECTED'].forEach(st => {
         const btn = document.getElementById(`admin-st-${st}`);
-        if (st === status) {
-          btn.className = 'px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold';
-        } else {
-          btn.className = 'px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600';
-        }
+        btn.className = (st === status) ? 'px-3 py-1.5 rounded-lg bg-amber-500 text-slate-950 font-bold' : 'px-3 py-1.5 rounded-lg bg-slate-700 text-slate-300 font-medium hover:bg-slate-600';
       });
       renderAdminList();
-    }
+    };
 
     function updateAdminDashboard() {
-      const allList = window.wishes || [];
+      const allList = window.wishes;
       const cntAll = allList.length;
-      const pendingList = allList.filter(w => w.status === 'PENDING');
-      const cntPending = pendingList.length;
+      const cntPending = allList.filter(w => w.status === 'PENDING').length;
       const cntApproved = allList.filter(w => w.status === 'APPROVED').length;
       const cntRejected = allList.filter(w => w.status === 'REJECTED').length;
       const totalLikes = allList.reduce((sum, w) => sum + (w.likes || 0), 0);
@@ -1383,15 +1182,14 @@
       renderRoleStatsChart();
       renderAdminList();
     }
-    window.updateAdminDashboard = updateAdminDashboard;
 
     function renderRoleStatsChart() {
       const container = document.getElementById('role-chart-container');
       const roles = ['畢業系友', '教科在校生', '系上師長', '貴賓好友'];
-      const total = (window.wishes || []).length || 1;
+      const total = window.wishes.length || 1;
 
       container.innerHTML = roles.map(role => {
-        const count = (window.wishes || []).filter(w => w.role === role || (role === '系上師長' && w.role === '退休師長')).length;
+        const count = window.wishes.filter(w => w.role === role || (role === '系上師長' && w.role === '退休師長')).length;
         const pct = Math.round((count / total) * 100);
         return `
           <div>
@@ -1409,7 +1207,7 @@
 
     function renderAdminList() {
       const container = document.getElementById('admin-message-list');
-      let filtered = window.wishes || [];
+      let filtered = window.wishes;
 
       if (currentAdminStatusFilter !== 'ALL') {
         filtered = filtered.filter(w => w.status === currentAdminStatusFilter);
@@ -1438,11 +1236,9 @@
               </div>
               <span class="text-[11px] text-slate-500">${w.timestamp || '剛剛'}</span>
             </div>
-
             <p class="text-xs text-slate-300 font-warm leading-relaxed bg-slate-900/60 p-2.5 rounded-xl border border-slate-700/50">
               ${escapeHtml(w.message || '')}
             </p>
-
             <div class="flex items-center justify-between text-xs pt-1 border-t border-slate-700/50">
               <div class="flex items-center gap-1.5">
                 ${w.status !== 'APPROVED' ? `<button onclick="setCardStatus('${w.id}', 'APPROVED')" class="px-2.5 py-1 bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 rounded-lg font-medium transition">展示</button>` : ''}
@@ -1451,125 +1247,83 @@
                   ${w.isPinned ? '取消置頂' : '設為置頂'}
                 </button>
               </div>
-
               <div class="flex items-center gap-2">
-                <button onclick="openEditModal('${w.id}')" class="text-slate-400 hover:text-amber-400 p-1" title="編輯內容">
-                  <i data-lucide="edit-2" class="w-4 h-4"></i>
-                </button>
-                <button onclick="deleteCard('${w.id}')" class="text-slate-400 hover:text-rose-400 p-1" title="永久刪除">
-                  <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
+                <button onclick="openEditModal('${w.id}')" class="text-slate-400 hover:text-amber-400 p-1" title="編輯內容"><i data-lucide="edit-2" class="w-4 h-4"></i></button>
+                <button onclick="deleteCard('${w.id}')" class="text-slate-400 hover:text-rose-400 p-1" title="永久刪除"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
               </div>
             </div>
           </div>
         `;
       }).join('');
-
       lucide.createIcons();
     }
 
-    async function setCardStatus(id, status) {
-      if (!window.db) return;
-      try {
-        const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
-        await window.updateDoc(docRef, { status: status });
-      } catch (err) {
-        console.error("更新審核狀態失敗:", err);
-      }
-    }
+    window.setCardStatus = async (id, status) => {
+      if (!auth.currentUser) return;
+      try { await updateDoc(getWishDoc(id), { status: status }); } catch (e) {}
+    };
 
-    async function togglePinCard(id) {
-      const card = (window.wishes || []).find(w => w.id === id);
-      if (card && window.db) {
-        try {
-          const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
-          await window.updateDoc(docRef, { isPinned: !card.isPinned });
-        } catch (err) {
-          console.error("切換置頂失敗:", err);
-        }
+    window.togglePinCard = async (id) => {
+      if (!auth.currentUser) return;
+      const card = window.wishes.find(w => w.id === id);
+      if (card) {
+        try { await updateDoc(getWishDoc(id), { isPinned: !card.isPinned }); } catch (e) {}
       }
-    }
+    };
 
-    async function batchApprovePending() {
-      if (!window.db) return;
-      const pendingList = (window.wishes || []).filter(w => w.status === 'PENDING');
+    window.batchApprovePending = async () => {
+      if (!auth.currentUser) return;
+      const pendingList = window.wishes.filter(w => w.status === 'PENDING');
       for (const item of pendingList) {
-        const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', item.id);
-        await window.updateDoc(docRef, { status: 'APPROVED' });
+        try { await updateDoc(getWishDoc(item.id), { status: 'APPROVED' }); } catch(e) {}
       }
-    }
+    };
 
-    async function deleteCard(id) {
-      if (!window.db) return;
-      try {
-        const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
-        await window.deleteDoc(docRef);
-      } catch (err) {
-        console.error("刪除留言失敗:", err);
-      }
-    }
+    window.deleteCard = async (id) => {
+      if (!auth.currentUser) return;
+      try { await deleteDoc(getWishDoc(id)); } catch (e) {}
+    };
 
-    function openEditModal(id) {
-      const card = (window.wishes || []).find(w => w.id === id);
+    window.openEditModal = (id) => {
+      const card = window.wishes.find(w => w.id === id);
       if (!card) return;
       document.getElementById('edit-id').value = card.id;
       document.getElementById('edit-author').value = card.author || '';
       document.getElementById('edit-message').value = card.message || '';
       document.getElementById('edit-modal').classList.remove('hidden');
-    }
+    };
 
-    function closeEditModal() {
-      document.getElementById('edit-modal').classList.add('hidden');
-    }
+    window.closeEditModal = () => document.getElementById('edit-modal').classList.add('hidden');
 
-    async function saveEditCard() {
+    window.saveEditCard = async () => {
+      if (!auth.currentUser) return;
       const id = document.getElementById('edit-id').value;
       const author = document.getElementById('edit-author').value.trim();
       const message = document.getElementById('edit-message').value.trim();
 
-      if (id && window.db) {
-        try {
-          const docRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'wishes', id);
-          await window.updateDoc(docRef, { author: author, message: message });
-        } catch (err) {
-          console.error("儲存修改內容失敗:", err);
-        }
+      if (id) {
+        try { await updateDoc(getWishDoc(id), { author, message }); } catch (e) {}
       }
-      closeEditModal();
-    }
+      window.closeEditModal();
+    };
 
-    async function toggleAutoModerateSetting(checked) {
+    window.toggleAutoModerateSetting = async (checked) => {
       window.isAutoModerateEnabled = checked;
-      if (window.db) {
-        try {
-          const configDocRef = window.doc(window.db, 'artifacts', window.appId, 'public', 'data', 'settings', 'config');
-          await window.setDoc(configDocRef, {
-            autoModerate: checked,
-            sensitiveWords: document.getElementById('setting-sensitive-words')?.value || '廣告, 詐騙, 買粉'
-          }, { merge: true });
-        } catch (err) {
-          console.error("同步審核設定失敗:", err);
-        }
-      }
-    }
+      if (!auth.currentUser) return;
+      try {
+        await setDoc(getSettingsDoc(), {
+          autoModerate: checked,
+          sensitiveWords: document.getElementById('setting-sensitive-words')?.value || '廣告, 詐騙, 買粉'
+        }, { merge: true });
+      } catch (e) {}
+    };
 
-    // Modals
-    function openSenderModal() {
-      document.getElementById('sender-modal').classList.remove('hidden');
-    }
-    function closeSenderModal() {
-      document.getElementById('sender-modal').classList.add('hidden');
-    }
+    // Standard Modals
+    window.openSenderModal = () => document.getElementById('sender-modal').classList.remove('hidden');
+    window.closeSenderModal = () => document.getElementById('sender-modal').classList.add('hidden');
 
-    function openQrModal() {
-      document.getElementById('qr-modal').classList.remove('hidden');
-    }
-    function closeQrModal() {
-      document.getElementById('qr-modal').classList.add('hidden');
-    }
-
-    function openMagnifyModal(id) {
-      const item = (window.wishes || []).find(w => w.id === id);
+    window.openMagnifyModal = (id) => {
+      const item = window.wishes.find(w => w.id === id);
       if (!item) return;
 
       const modal = document.getElementById('magnify-modal');
@@ -1577,7 +1331,6 @@
       const theme = CARD_THEMES.find(t => t.id === item.themeId) || CARD_THEMES[0];
 
       box.className = `relative w-full max-w-lg rounded-3xl p-8 shadow-2xl transition-all transform animate-popNote ${theme.bg} ${theme.border} border-2`;
-
       document.getElementById('mag-avatar').innerText = item.emoji || '🎓';
       document.getElementById('mag-name').innerText = item.author || '';
       
@@ -1591,30 +1344,25 @@
       const likeBtn = document.getElementById('mag-like-btn');
       document.getElementById('mag-like-count').innerText = `送上祝福 (${item.likes || 0})`;
       likeBtn.onclick = (e) => {
-        likeCard(e, item.id);
-        document.getElementById('mag-like-count').innerText = `送上祝福 (${item.likes || 0})`;
+        window.likeCard(e, item.id);
+        document.getElementById('mag-like-count').innerText = `送上祝福 (${(item.likes || 0) + 1})`;
       };
 
       modal.classList.remove('hidden');
       lucide.createIcons();
-    }
+    };
 
-    function closeMagnifyModal() {
-      document.getElementById('magnify-modal').classList.add('hidden');
-    }
+    window.closeMagnifyModal = () => document.getElementById('magnify-modal').classList.add('hidden');
 
-    function toggleFullScreen() {
+    window.toggleFullScreen = () => {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});
       } else {
-        if (document.exitFullscreen) {
-          document.exitFullscreen();
-        }
+        if (document.exitFullscreen) document.exitFullscreen();
       }
-    }
+    };
 
-    // 輪播
-    function toggleAutoScroll() {
+    window.toggleAutoScroll = () => {
       isAutoScrolling = !isAutoScrolling;
       const btnIcon = document.getElementById('autoscroll-icon');
       const btnLabel = document.getElementById('autoscroll-label');
@@ -1622,35 +1370,26 @@
       if (isAutoScrolling) {
         btnIcon.setAttribute('data-lucide', 'pause');
         btnLabel.innerText = '暫停輪播';
-        startAutoScroll();
+        clearInterval(autoScrollInterval);
+        let direction = 1;
+        autoScrollInterval = setInterval(() => {
+          window.scrollBy({ top: 1.5 * direction, behavior: 'smooth' });
+          if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 8) {
+            direction = -1;
+          } else if (window.scrollY <= 0) {
+            direction = 1;
+          }
+        }, 55);
       } else {
         btnIcon.setAttribute('data-lucide', 'play');
         btnLabel.innerText = '舞台輪播';
         clearInterval(autoScrollInterval);
       }
       lucide.createIcons();
-    }
+    };
 
-    function startAutoScroll() {
-      clearInterval(autoScrollInterval);
-      let direction = 1;
-      autoScrollInterval = setInterval(() => {
-        window.scrollBy({
-          top: 1.5 * direction,
-          behavior: 'smooth'
-        });
-
-        if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight - 8) {
-          direction = -1;
-        } else if (window.scrollY <= 0) {
-          direction = 1;
-        }
-      }, 55);
-    }
-
-    // 匯出功能
-    function exportWishes() {
-      const dataStr = (window.wishes || []).map((w, idx) => `[${idx + 1}] ${w.author} (${w.role}) - 狀態: ${w.status} - 時間: ${w.timestamp}\n${w.message}\n`).join('\n---\n\n');
+    window.exportWishes = () => {
+      const dataStr = window.wishes.map((w, idx) => `[${idx + 1}] ${w.author} (${w.role}) - 狀態: ${w.status} - 時間: ${w.timestamp}\n${w.message}\n`).join('\n---\n\n');
       const blob = new Blob([`淡江大學教育科技系 30 周年慶・數位祝福名冊\n匯出時間：${new Date().toLocaleString()}\n\n${dataStr}`], { type: 'text/plain;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -1658,7 +1397,7 @@
       a.download = `淡江教科30周年祝福名冊_${new Date().toISOString().slice(0,10)}.txt`;
       a.click();
       URL.revokeObjectURL(url);
-    }
+    };
 
     function escapeHtml(string) {
       const div = document.createElement('div');
@@ -1692,7 +1431,6 @@
         particles.forEach(p => {
           p.x += p.dx;
           p.y += p.dy;
-
           if (p.x < 0) p.x = width;
           if (p.x > width) p.x = 0;
           if (p.y < 0) p.y = height;
@@ -1710,7 +1448,22 @@
       renderLoop();
     }
 
-    window.addEventListener('DOMContentLoaded', init);
+    // Startup Execution
+    window.addEventListener('DOMContentLoaded', () => {
+      const sessionAuth = sessionStorage.getItem(ADMIN_SESSION_KEY) === 'true';
+      isAdminAuthenticated = sessionAuth;
+      updateAdminUI();
+
+      window.setupColorSelector();
+      window.setupEmojiSelector();
+      initQRCodes();
+      initParticles();
+      lucide.createIcons();
+
+      // Trigger Firebase
+      initAuthAndData();
+    });
+
   </script>
 </body>
 </html>

@@ -108,7 +108,7 @@
           </div>
         </div>
 
-        <!-- 中央：雙 QR Code 區塊 (僅桌機版顯示)，尺寸放大至易於掃描 -->
+        <!-- 中央：雙 QR Code 區塊 (僅桌機版顯示) -->
         <div class="hidden lg:flex items-center gap-6 justify-center flex-1">
           <!-- 留言牆 QR Code -->
           <div class="flex items-center gap-3 bg-amber-50/60 px-4 py-2 rounded-xl border border-amber-200/70 shadow-sm transition hover:bg-amber-100/50">
@@ -119,10 +119,13 @@
             <div id="qrcode-display" class="w-24 h-24 bg-white p-1.5 rounded-lg shadow-sm border border-amber-200 flex items-center justify-center shrink-0"></div>
           </div>
           
-          <!-- 樂捐圖片 QR Code (IMG_3819.JPG) -->
+          <!-- 樂捐圖片 QR Code (帶有多重容錯機制) -->
           <div class="flex items-center gap-3 bg-stone-50/80 px-4 py-2 rounded-xl border border-stone-200 shadow-sm transition hover:bg-stone-100">
-            <div class="w-24 h-24 bg-white p-1.5 rounded-lg shadow-sm border border-stone-200 flex items-center justify-center overflow-hidden shrink-0">
-              <img src="IMG_3819.JPG" alt="歡迎樂捐 QR" class="w-full h-full object-cover rounded-md" />
+            <div class="w-24 h-24 bg-white p-1.5 rounded-lg shadow-sm border border-stone-200 flex items-center justify-center overflow-hidden shrink-0 relative">
+              <img src="TKUET30/影像/IMG_3819.jpg" 
+                   alt="歡迎樂捐 QR" 
+                   class="w-full h-full object-cover rounded-md"
+                   onerror="handleImageError(this)" />
             </div>
             <div class="text-left">
               <p class="text-sm font-bold text-stone-800 leading-tight mb-1">歡迎樂捐</p>
@@ -174,10 +177,9 @@
     </div>
   </header>
 
-  <!-- 主內容區塊 (調整為滿版並設定三欄網格) -->
+  <!-- 主內容區塊 -->
   <main class="relative z-10 flex-1 p-4 md:p-6 lg:p-8 max-w-[1400px] mx-auto w-full">
     <section class="w-full">
-      <!-- 強制在大螢幕下使用 lg:grid-cols-3 達成三張一列 -->
       <div id="wishes-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 auto-rows-max transition-all"></div>
       
       <div id="empty-state" class="hidden text-center py-12 md:py-20 bg-white/40 rounded-3xl border border-amber-900/5 mt-4">
@@ -336,7 +338,6 @@
     let currentRoleFilter = 'ALL';
     let currentSearchKeyword = '';
     
-    // 改良版滾動參數
     let autoScrollReq = null;
     let isAutoScrolling = false;
     
@@ -349,6 +350,27 @@
       initParticles();
       updateAdminUI();
       lucide.createIcons();
+    }
+
+    // 圖片載入失敗時的容錯處理（自動嘗試其他副檔名或路徑）
+    function handleImageError(img) {
+      const currentSrc = img.src;
+      if (currentSrc.includes('IMG_3819.jpg')) {
+        img.src = 'TKUET30/影像/IMG_3819.JPG';
+      } else if (currentSrc.includes('IMG_3819.JPG')) {
+        img.src = 'IMG_3819.jpg';
+      } else if (currentSrc.includes('IMG_3819.jpg') && !currentSrc.includes('TKUET30')) {
+        img.src = 'IMG_3819.JPG';
+      } else {
+        // 如果都失敗，顯示文字提示
+        img.style.display = 'none';
+        if (!img.parentElement.querySelector('.error-text')) {
+          const span = document.createElement('span');
+          span.className = 'error-text text-[10px] text-rose-500 text-center font-bold px-1';
+          span.innerText = '圖片遺失\n請確認路徑';
+          img.parentElement.appendChild(span);
+        }
+      }
     }
 
     function updateAdminUI() {
@@ -539,14 +561,12 @@
 
     function initQRCodes() {
       const url = window.location.href;
-      // 初始化較大的導覽列 QR Code (配合 w-24 h-24 容器，扣除 padding 後設定為 84x84)
       if(document.getElementById('qrcode-display')) {
-        document.getElementById('qrcode-display').innerHTML = ''; // 清除以防重複生成
+        document.getElementById('qrcode-display').innerHTML = ''; 
         new QRCode(document.getElementById('qrcode-display'), { text: url, width: 84, height: 84, colorDark: '#451A03', colorLight: '#ffffff' });
       }
     }
 
-    // 重新設計的平滑向下滾動輪播邏輯 (無縫回到頂部)
     function toggleAutoScroll() {
       isAutoScrolling = !isAutoScrolling;
       if (isAutoScrolling) {
@@ -555,7 +575,7 @@
         
         let lastTime = performance.now();
         let accumulatedScroll = 0;
-        const pixelsPerSecond = 45; // 可以更改此數值調整滾動速度
+        const pixelsPerSecond = 45; 
 
         function scrollDown(currentTime) {
           if (!isAutoScrolling) return;
@@ -571,7 +591,6 @@
             accumulatedScroll -= scrollPixels;
           }
           
-          // 如果捲動到底部，瞬間歸零回到最上方
           if (Math.ceil(window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
              window.scrollTo(0, 0);
              accumulatedScroll = 0;
